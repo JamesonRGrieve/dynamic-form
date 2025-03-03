@@ -1,11 +1,11 @@
 import timezones from 'timezones-list';
 
-import React, { ReactNode, useCallback, useEffect, useState } from 'react';
-import Field from './Field';
-import TextField from './TextField';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import log from '../next-log/log';
+import log from '@/next-log/log';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
+import Field from './Field';
+import TextField from './TextField';
 
 export function toTitleCase(str: string) {
   // Replace underscores, or capital letters (in the middle of the string) with a space and the same character
