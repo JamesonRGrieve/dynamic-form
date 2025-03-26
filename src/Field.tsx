@@ -1,11 +1,11 @@
 import React from 'react';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import CheckField from './CheckField';
 import PasswordField from './PasswordField';
 import SelectField from './SelectField';
 import TextField from './TextField';
 import RadioField from './RadioField';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 export type Message = {
   level: string;
