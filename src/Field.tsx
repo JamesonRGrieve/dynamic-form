@@ -1,5 +1,5 @@
 import { Label } from '@/components/ui/label';
-import { cn } from '@/src/lib/utils';
+import { cn } from '@/lib/utils';
 import React from 'react';
 import CheckField from './CheckField';
 import PasswordField from './PasswordField';
