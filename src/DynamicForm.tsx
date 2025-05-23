@@ -3,7 +3,7 @@ import timezones from 'timezones-list';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import log from '@/next-log/log';
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
 import Field from './Field';
 import TextField from './TextField';
 
@@ -65,7 +65,7 @@ export default function DynamicForm({
     }));
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback((e: FormEvent) => {
     Object.keys(fields ?? toUpdate).forEach((key: string) => {
       try {
         if (fields) {
@@ -90,6 +90,7 @@ export default function DynamicForm({
       } catch (error) {
         setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: error.message } }));
       }
+      e.preventDefault();
     });
     if (Object.values(editedState).every((field) => field.error === '')) {
       const formattedForReturn = Object.fromEntries(Object.entries(editedState).map(([key, value]) => [key, value.value]));
