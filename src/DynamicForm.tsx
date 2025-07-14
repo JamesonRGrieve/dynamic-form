@@ -65,38 +65,41 @@ export default function DynamicForm({
     }));
   }, []);
 
-  const handleSubmit = useCallback((e: FormEvent) => {
-    Object.keys(fields ?? toUpdate).forEach((key: string) => {
-      try {
-        if (fields) {
-          if (fields[key].validation && fields[key].validation(editedState[key].value)) {
-            setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
+  const handleSubmit = useCallback(
+    (e: FormEvent) => {
+      Object.keys(fields ?? toUpdate).forEach((key: string) => {
+        try {
+          if (fields) {
+            if (fields[key].validation && fields[key].validation(editedState[key].value)) {
+              setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
+            } else {
+              setEditedState((prevState) => ({
+                ...prevState,
+                [key]: { ...prevState[key], error: 'Invalid value, please double check your input.' },
+              }));
+            }
           } else {
-            setEditedState((prevState) => ({
-              ...prevState,
-              [key]: { ...prevState[key], error: 'Invalid value, please double check your input.' },
-            }));
+            if (typeof toUpdate[key as keyof typeof toUpdate] === 'number' && isNaN(Number(editedState[key].value))) {
+              setEditedState((prevState) => ({
+                ...prevState,
+                [key]: { ...prevState[key], error: 'Expected a number for this input.' },
+              }));
+            } else {
+              setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
+            }
           }
-        } else {
-          if (typeof toUpdate[key as keyof typeof toUpdate] === 'number' && isNaN(Number(editedState[key].value))) {
-            setEditedState((prevState) => ({
-              ...prevState,
-              [key]: { ...prevState[key], error: 'Expected a number for this input.' },
-            }));
-          } else {
-            setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
-          }
+        } catch (error) {
+          setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: error.message } }));
         }
-      } catch (error) {
-        setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: error.message } }));
+        e.preventDefault();
+      });
+      if (Object.values(editedState).every((field) => field.error === '')) {
+        const formattedForReturn = Object.fromEntries(Object.entries(editedState).map(([key, value]) => [key, value.value]));
+        onConfirm(formattedForReturn);
       }
-      e.preventDefault();
-    });
-    if (Object.values(editedState).every((field) => field.error === '')) {
-      const formattedForReturn = Object.fromEntries(Object.entries(editedState).map(([key, value]) => [key, value.value]));
-      onConfirm(formattedForReturn);
-    }
-  }, [editedState, fields, onConfirm]);
+    },
+    [editedState, fields, onConfirm],
+  );
 
   // Initial state setup in useEffect to handle incoming props correctly
   useEffect(() => {
@@ -167,7 +170,7 @@ export default function DynamicForm({
       {readOnlyFields.length > 0 && <Separator className='col-span-4' />}
       {readOnlyFields.map((fieldName) => {
         return (
-          toUpdate[fieldName as keyof typeof toUpdate] !== undefined && (
+          toUpdate?.[fieldName as keyof typeof toUpdate] !== undefined && (
             <div className='col-span-2' key={fieldName.toLowerCase().replaceAll(' ', '-')}>
               <div className='w-full my-4'>
                 <TextField
