@@ -1,190 +1,227 @@
-import timezones from 'timezones-list';
+import type { FormEvent, ReactNode } from 'react';
+import { useCallback, useMemo } from 'react';
+import { Button } from './primitives/Button';
+import { Separator } from './primitives/Separator';
+import { Field } from './Field';
+import { TextField } from './TextField';
+import { useDynamicFormState, validateForm } from './useDynamicFormState';
+import type { DynamicFormFieldDefinition, DynamicFormProps, PrimitiveFieldValue } from './types';
+import { toDisplayLabel } from './utils/text';
+import { getSortedTimezones } from './utils/timezone';
 
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import log from '@/next-log/log';
-import { ReactNode, useCallback, useEffect, useState } from 'react';
-import Field from './Field';
-import TextField from './TextField';
+const TIMEZONE_FIELD_NAMES = new Set(['tz', 'timezone']);
 
-export function toTitleCase(str: string) {
-  // Replace underscores, or capital letters (in the middle of the string) with a space and the same character
-  str = str.replace(/(_)|((?<=\w)[A-Z])/g, ' $&');
-
-  // Remove underscore if exists
-  str = str.replace(/_/g, '');
-
-  // Convert to title case
-  str = str.replace(/\w\S*/g, (txt: string) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-
-  return str;
+function inferFieldDefinition(value: PrimitiveFieldValue): DynamicFormFieldDefinition {
+  switch (typeof value) {
+    case 'number':
+      return { type: 'number' };
+    case 'boolean':
+      return { type: 'boolean' };
+    default:
+      return { type: 'text' };
+  }
 }
-const typeDefaults = {
-  text: '',
-  password: '',
-  number: 0,
-  boolean: false,
-};
-export type DynamicFormFieldValueTypes = string | number | boolean;
-export type DynamicFormProps = {
-  fields?: {
-    [key: string]: {
-      type: 'text' | 'number' | 'password' | 'boolean';
-      display?: string;
-      value?: DynamicFormFieldValueTypes;
-      validation?: (value: DynamicFormFieldValueTypes) => boolean;
-    };
-  };
-  submitButtonText?: string;
-  excludeFields?: string[];
-  readOnlyFields?: string[];
-  toUpdate?: any;
-  additionalButtons?: ReactNode[];
-  onConfirm: (data: { [key: string]: DynamicFormFieldValueTypes }) => void;
-};
+
+function ensureFields(fields: DynamicFormProps['fields'], toUpdate: DynamicFormProps['toUpdate'], locale: string) {
+  if (fields && Object.keys(fields).length > 0) {
+    return fields;
+  }
+
+  if (!toUpdate) {
+    throw new Error('Either fields or toUpdate must be provided to DynamicForm.');
+  }
+
+  return Object.fromEntries(
+    Object.entries(toUpdate).map(([key, value]) => [
+      key,
+      {
+        ...inferFieldDefinition(value),
+        display: toDisplayLabel(key, locale),
+        value,
+      } satisfies DynamicFormFieldDefinition,
+    ]),
+  );
+}
+
+function coerceValue(value: string | boolean | string[], definition: DynamicFormFieldDefinition): PrimitiveFieldValue {
+  if (definition.type === 'number') {
+    const numericValue = typeof value === 'number' ? value : Number(value);
+    return Number.isNaN(numericValue) ? '' : numericValue;
+  }
+
+  if (definition.type === 'boolean') {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+    return value === 'true' || value === true;
+  }
+
+  return value;
+}
 
 export default function DynamicForm({
-  fields,
+  fields: incomingFields,
   toUpdate,
   excludeFields = [],
   readOnlyFields = [],
   onConfirm,
   submitButtonText = 'Submit',
   additionalButtons = [],
+  onValidationError,
+  locale = 'en',
+  timezoneLabelFormatter,
 }: DynamicFormProps) {
-  if (fields === undefined && toUpdate === undefined) {
-    throw new Error('Either fields or toUpdate must be provided to DynamicForm.');
-  }
-  const [editedState, setEditedState] = useState<{ [key: string]: { value: DynamicFormFieldValueTypes; error: string } }>(
-    {},
+  const fields = useMemo(
+    () => ensureFields(incomingFields, toUpdate, locale),
+    [incomingFields, locale, toUpdate],
   );
-  const handleChange = useCallback((event: any, id?: string) => {
-    setEditedState((prevState) => ({
-      ...prevState,
-      [id]: { ...prevState[id], value: event.target.value },
+
+  const { runtimeFields, state, setValue, setErrors } = useDynamicFormState(fields, toUpdate, excludeFields, readOnlyFields);
+
+  const timezoneOptions = useMemo(() => {
+    const formatter = timezoneLabelFormatter ?? ((tz: { label: string; utc: string }) => `${tz.label} (${tz.utc})`);
+    return getSortedTimezones().map((timezone) => ({
+      value: timezone.tzCode,
+      label: formatter(timezone, locale),
     }));
-  }, []);
+  }, [locale, timezoneLabelFormatter]);
 
-  const handleSubmit = useCallback(() => {
-    Object.keys(fields ?? toUpdate).forEach((key: string) => {
-      try {
-        if (fields) {
-          if (fields[key].validation && fields[key].validation(editedState[key].value)) {
-            setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
-          } else {
-            setEditedState((prevState) => ({
-              ...prevState,
-              [key]: { ...prevState[key], error: 'Invalid value, please double check your input.' },
-            }));
-          }
-        } else {
-          if (typeof toUpdate[key as keyof typeof toUpdate] === 'number' && isNaN(Number(editedState[key].value))) {
-            setEditedState((prevState) => ({
-              ...prevState,
-              [key]: { ...prevState[key], error: 'Expected a number for this input.' },
-            }));
-          } else {
-            setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
-          }
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      const result = validateForm(state, runtimeFields);
+      if (!result.isValid) {
+        setErrors(result.errors);
+        onValidationError?.(result.errors);
+        console.warn('DynamicForm submission blocked due to validation errors.', { fields: Object.keys(result.errors) });
+        return;
+      }
+
+      setErrors({});
+      onConfirm(result.values);
+    },
+    [onConfirm, onValidationError, runtimeFields, setErrors, state],
+  );
+
+  const handleChange = useCallback(
+    (name: string, value: PrimitiveFieldValue) => {
+      const definition = fields[name];
+      if (!definition) {
+        return;
+      }
+
+      const coercedValue = coerceValue(value, definition);
+      setValue(name, coercedValue);
+    },
+    [fields, setValue],
+  );
+
+  const renderField = useCallback(
+    (field: typeof runtimeFields[number]) => {
+      const fieldState = state[field.name];
+      const errorMessage = fieldState?.error;
+      const baseType = field.definition.type;
+      const isBoolean = baseType === 'boolean';
+      const isPassword = baseType === 'password' || field.name.toLowerCase().includes('password');
+      const isTimezone = baseType === 'timezone' || TIMEZONE_FIELD_NAMES.has(field.name.toLowerCase());
+
+      let fieldType: 'text' | 'password' | 'select' | 'checkbox';
+      if (isBoolean) {
+        fieldType = 'checkbox';
+      } else if (isPassword) {
+        fieldType = 'password';
+      } else if (isTimezone || baseType === 'select') {
+        fieldType = 'select';
+      } else {
+        fieldType = 'text';
+      }
+
+      const label = field.definition.display ?? toDisplayLabel(field.name, locale);
+      const helperText = field.definition.helperText;
+      const placeholder = field.definition.placeholder;
+
+      const valueForField: string | boolean | string[] = (() => {
+        if (isBoolean) {
+          return Boolean(fieldState?.value);
         }
-      } catch (error) {
-        setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: error.message } }));
-      }
-    });
-    if (Object.values(editedState).every((field) => field.error === '')) {
-      const formattedForReturn = Object.fromEntries(Object.entries(editedState).map(([key, value]) => [key, value.value]));
-      onConfirm(formattedForReturn);
-    }
-  }, [editedState, fields, onConfirm]);
+        if (Array.isArray(fieldState?.value)) {
+          return fieldState?.value;
+        }
+        return fieldState?.value?.toString() ?? '';
+      })();
 
-  // Initial state setup in useEffect to handle incoming props correctly
-  useEffect(() => {
-    const initialState: { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } = {};
-    Object.keys(fields ?? toUpdate).forEach((key) => {
-      if (!excludeFields.includes(key) && !readOnlyFields.includes(key)) {
-        initialState[key] = {
-          value: fields
-            ? (fields[key].value ?? typeDefaults[fields[key].type as keyof typeof typeDefaults])
-            : toUpdate[key as keyof typeof toUpdate],
-          error: '',
-        };
-      }
-    });
-    setEditedState(initialState);
-    log(['Setting initial dynamic form state', initialState], { client: 2 });
-  }, [fields, toUpdate]); // Depend on `fields` to re-initialize state when `fields` prop changes
+      const items = (() => {
+        if (isTimezone) {
+          return timezoneOptions;
+        }
+        if (field.definition.options) {
+          return field.definition.options;
+        }
+        return undefined;
+      })();
+
+      return (
+        <Field
+          key={field.name}
+          nameID={field.name.toLowerCase().replace(/\s+/g, '-')}
+          label={label}
+          description={field.definition.description}
+          type={fieldType}
+          value={valueForField}
+          onChange={(val) => handleChange(field.name, val as PrimitiveFieldValue)}
+          items={items}
+          messages={errorMessage ? [{ level: 'error', value: errorMessage }] : []}
+          helperText={helperText}
+          placeholder={placeholder}
+          disabled={field.readOnly}
+        />
+      );
+    },
+    [fields, handleChange, locale, runtimeFields, state, timezoneOptions],
+  );
+
+  const readOnlyFieldEntries = useMemo(
+    () => runtimeFields.filter((field) => field.readOnly),
+    [runtimeFields],
+  );
+
+  const editableFieldEntries = useMemo(
+    () => runtimeFields.filter((field) => !field.readOnly),
+    [runtimeFields],
+  );
 
   return (
-    <form className='grid grid-cols-4 gap-4'>
-      {Object.entries(editedState).map(
-        ([field_name, field_object]) =>
-          field_object !== undefined && (
-            <div key={field_name.toLowerCase().replaceAll(' ', '-')} className='col-span-2'>
-              {['tz', 'timezone'].includes(field_name) ? (
-                <Field
-                  nameID={field_name.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[field_name].display ?? toTitleCase(field_name)) : toTitleCase(field_name)}
-                  value={field_object?.value?.toString() || ''}
-                  onChange={handleChange}
-                  messages={field_object.error ? [{ level: 'error', value: field_object.error }] : []}
-                  type='select'
-                  items={timezones
-                    .sort((a, b) => {
-                      if (a.utc !== b.utc) {
-                        return a.utc > b.utc ? 1 : -1;
-                      } else {
-                        return a.tzCode > b.tzCode ? 1 : -1;
-                      }
-                    })
-                    .map((tz) => ({ value: tz.tzCode, label: tz.label }))}
-                />
-              ) : (
-                <Field
-                  nameID={field_name.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[field_name].display ?? toTitleCase(field_name)) : toTitleCase(field_name)}
-                  value={field_object?.value?.toString() || ''}
-                  onChange={handleChange}
-                  messages={field_object.error ? [{ level: 'error', value: field_object.error }] : []}
-                  type={
-                    fields && fields[field_name].type === 'boolean'
-                      ? 'checkbox'
-                      : (fields && fields[field_name].type === 'password') || field_name.toLowerCase().includes('password')
-                        ? 'password'
-                        : 'text'
-                  }
-                />
-              )}
-            </div>
-          ),
-      )}
-      <Button
-        className={`col-span-2 ${readOnlyFields.length > 0 && additionalButtons.length > 0 ? 'col-span-2' : ''}`}
-        onClick={handleSubmit}
-      >
-        {submitButtonText}
-      </Button>
-      {readOnlyFields.length > 0 && <Separator className='col-span-4' />}
-      {readOnlyFields.map((fieldName) => {
+    <form className='grid grid-cols-4 gap-4' onSubmit={handleSubmit} noValidate>
+      {editableFieldEntries.map((field) => renderField(field))}
+
+      <div className='col-span-4 flex flex-wrap gap-2'>
+        <Button type='submit' className='min-w-[120px]'>
+          {submitButtonText}
+        </Button>
+        {additionalButtons.map((button: ReactNode, index: number) => (
+          <span key={index} className='inline-flex'>
+            {button}
+          </span>
+        ))}
+      </div>
+
+      {readOnlyFieldEntries.length > 0 && <Separator />}
+
+      {readOnlyFieldEntries.map((field) => {
+        const displayValue = state[field.name]?.value;
         return (
-          toUpdate[fieldName as keyof typeof toUpdate] !== undefined && (
-            <div className='col-span-2' key={fieldName.toLowerCase().replaceAll(' ', '-')}>
-              <div className='w-full my-4'>
-                <TextField
-                  // fullWidth
-                  onChange={() => null}
-                  id={fieldName.toLowerCase().replaceAll(' ', '-')}
-                  name={fieldName.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
-                  value={toUpdate[fieldName as keyof typeof toUpdate]?.toString() || ''}
-                  disabled
-                />
-              </div>
-            </div>
-          )
+          <div key={`readonly-${field.name}`} className='col-span-2'>
+            <TextField
+              id={`readonly-${field.name}`}
+              name={`readonly-${field.name}`}
+              label={field.definition.display ?? toDisplayLabel(field.name, locale)}
+              value={displayValue?.toString() ?? ''}
+              disabled
+            />
+          </div>
         );
       })}
-
-      {additionalButtons}
     </form>
   );
 }

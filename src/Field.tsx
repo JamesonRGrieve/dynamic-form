@@ -1,108 +1,144 @@
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-import React from 'react';
-import CheckField from './CheckField';
-import PasswordField from './PasswordField';
-import RadioField from './RadioField';
-import SelectField from './SelectField';
-import TextField from './TextField';
+import type { ReactNode } from 'react';
+import { CheckField } from './CheckField';
+import type { SelectItem } from './SelectField';
+import { SelectField } from './SelectField';
+import type { TextFieldProps } from './TextField';
+import { TextField } from './TextField';
+import { PasswordField } from './PasswordField';
+import { RadioField, type RadioOption } from './RadioField';
 
-export type Message = {
-  level: string;
+export type MessageLevel = 'error' | 'warning' | 'info' | 'success';
+
+export interface Message {
+  level: MessageLevel;
   value: string;
-};
-export type Field = {
-  label: string;
-  description?: string;
-  autoComplete?: string;
-  placeholder?: string;
-  validate?: (value: string) => boolean;
-  type?: 'text' | 'password' | 'select' | 'time' | 'date' | 'datetime' | 'checkbox' | 'radio';
-  items?: {
-    value: string;
-    label: string;
-  }[];
-};
-export type FieldProps = Field & {
+}
+
+export type FieldType = 'text' | 'password' | 'select' | 'checkbox' | 'radio';
+
+export interface FieldProps {
   nameID: string;
-  value?: string;
-  onChange?: any;
+  label: string;
+  description?: ReactNode;
+  autoComplete?: TextFieldProps['autoComplete'];
+  placeholder?: TextFieldProps['placeholder'];
+  type?: FieldType;
+  items?: (SelectItem | RadioOption | string | { value: string; label: string })[];
+  value?: string | boolean | string[];
+  onChange?: (value: string | boolean | string[]) => void;
   messages?: Message[];
+  disabled?: boolean;
+  helperText?: string;
+}
+
+const messageColor: Record<MessageLevel, string> = {
+  error: 'bg-red-100 text-red-800',
+  warning: 'bg-yellow-100 text-yellow-800',
+  info: 'bg-blue-100 text-blue-800',
+  success: 'bg-green-100 text-green-800',
 };
 
-const FieldInput: React.FC<FieldProps> = ({
+export function Field({
   nameID,
   label,
+  description,
+  type = 'text',
+  items = [],
   value,
   onChange,
+  messages = [],
+  disabled = false,
+  helperText,
   autoComplete,
-  placeholder = '',
-  type = 'text',
-  items,
-}) => {
-  const injectedOnChange = onChange
-    ? (target: any) => {
-        onChange(target, nameID);
-      }
-    : null;
+  placeholder,
+}: FieldProps) {
+  const hasMessages = messages.length > 0;
 
-  const commonProps = {
-    id: nameID,
-    name: nameID,
-    value,
-    onChange: injectedOnChange,
-    label,
+  const renderInput = () => {
+    switch (type) {
+      case 'password':
+        return (
+          <PasswordField
+            id={nameID}
+            name={nameID}
+            label={label}
+            autoComplete={autoComplete}
+            onChange={(val) => onChange?.(val)}
+            value={typeof value === 'string' ? value : ''}
+            placeholder={placeholder}
+            disabled={disabled}
+          />
+        );
+      case 'select':
+        return (
+          <SelectField
+            id={nameID}
+            name={nameID}
+            label={label}
+            value={typeof value === 'string' ? value : ''}
+            onChange={(val) => onChange?.(val)}
+            items={(items as SelectItem[]) ?? []}
+            placeholder={placeholder}
+            disabled={disabled}
+          />
+        );
+      case 'checkbox':
+        return (
+          <CheckField
+            id={nameID}
+            name={nameID}
+            value={(value as boolean | string[]) ?? false}
+            onChange={(val) => onChange?.(val)}
+            helperText={helperText}
+            label={label}
+            items={(items as (string | { value: string; label: string })[]) ?? []}
+            disabled={disabled}
+          />
+        );
+      case 'radio':
+        return (
+          <RadioField
+            id={nameID}
+            name={nameID}
+            value={typeof value === 'string' ? value : ''}
+            items={(items as RadioOption[]) ?? []}
+            onChange={(val) => onChange?.(val)}
+            label={label}
+            disabled={disabled}
+          />
+        );
+      case 'text':
+      default:
+        return (
+          <TextField
+            id={nameID}
+            name={nameID}
+            label={label}
+            autoComplete={autoComplete}
+            onChange={(val) => onChange?.(val)}
+            value={typeof value === 'string' ? value : ''}
+            helperText={helperText}
+            error={messages.find((message) => message.level === 'error')?.value}
+            placeholder={placeholder}
+            disabled={disabled}
+          />
+        );
+    }
   };
 
-  switch (type) {
-    case 'text':
-      return <TextField {...commonProps} autoComplete={autoComplete} placeholder={placeholder} />;
-    case 'password':
-      return <PasswordField {...commonProps} autoComplete={autoComplete} />;
-    case 'select':
-      return <SelectField {...commonProps} items={items} />;
-    case 'checkbox':
-      return <CheckField {...commonProps} value={['on', 'true'].includes(value?.toLowerCase())} />;
-    case 'radio':
-      return <RadioField {...commonProps} items={items} />;
-    default:
-      return <TextField {...commonProps} autoComplete={autoComplete} />;
-  }
-};
-
-const Field: React.FC<FieldProps> = ({ nameID, label, description, type = 'text', messages = [], ...rest }) => {
   return (
-    <div className='w-full my-4'>
-      {['checkbox', 'radio'].includes(type) && (
-        <Label id={nameID + '-label'} htmlFor={nameID}>
-          {label}
-        </Label>
-      )}
-      {description && <p className='mb-2'>{description}</p>}
-      <FieldInput nameID={nameID} label={label} type={type} {...rest} />
-      {messages && (
-        <div className={cn('transition-all', messages.length > 0 ? 'block' : 'hidden')}>
-          {/* Should render messages as a map of MUI Alert's */}
-          {messages?.map((message, index) => (
-            <div
-              key={index}
-              className={`mt-2 p-3 rounded ${
-                message.level === 'error'
-                  ? 'bg-red-100 text-red-700'
-                  : message.level === 'warning'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : message.level === 'info'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'bg-green-100 text-green-700'
-              }`}
-            >
+    <div className='w-full space-y-2'>
+      {description && <p className='text-sm text-gray-600'>{description}</p>}
+      {renderInput()}
+      {hasMessages && (
+        <div className='space-y-2' role='alert' aria-live='polite'>
+          {messages.map((message, index) => (
+            <p key={index} className={`rounded-md px-3 py-2 text-sm ${messageColor[message.level]}`}>
               {message.value}
-            </div>
+            </p>
           ))}
         </div>
       )}
     </div>
   );
-};
-
-export default Field;
+}
