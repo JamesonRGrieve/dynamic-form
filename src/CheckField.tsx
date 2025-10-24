@@ -1,59 +1,78 @@
-import React from 'react';
+import type { ChangeEvent } from 'react';
 
-interface CheckFieldProps {
+type MultiOption = string | { value: string; label: string };
+
+function toOptionValue(option: MultiOption) {
+  return typeof option === 'string' ? option : option.value;
+}
+
+function toOptionLabel(option: MultiOption) {
+  return typeof option === 'string' ? option : option.label;
+}
+
+export interface CheckFieldProps {
   id: string;
   name: string;
   value: boolean | string[];
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (value: boolean | string[]) => void;
   helperText?: string;
   label?: string;
-  items?: string[];
+  items?: MultiOption[];
+  disabled?: boolean;
 }
 
-export default function CheckField({ id, name, value, onChange, helperText, label, items }: CheckFieldProps) {
-  const isMulti = Array.isArray(items) && items.length > 0;
+export function CheckField({ id, name, value, onChange, helperText, label, items, disabled = false }: CheckFieldProps) {
+  const handleSingleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange(event.target.checked);
+  };
 
-  if (isMulti) {
+  const handleMultiChange = (option: MultiOption, checked: boolean) => {
+    const optionValue = toOptionValue(option);
+    const current = Array.isArray(value) ? [...value] : [];
+    const next = checked ? Array.from(new Set([...current, optionValue])) : current.filter((entry) => entry !== optionValue);
+    onChange(next);
+  };
+
+  if (Array.isArray(items) && items.length > 0) {
     return (
-      <div className='space-y-2'>
-        {items.map((item, index) => (
-          <label key={index} className='flex items-center space-x-2 cursor-pointer'>
-            <input
-              type='checkbox'
-              id={`${id}_${item.replace(/[\W_]+/g, '')}`}
-              checked={(value as string[]).includes(item)}
-              onChange={(event) => {
-                const newValue = [...(value as string[])];
-                if (event.target.checked) {
-                  newValue.push(item);
-                } else {
-                  const index = newValue.indexOf(item);
-                  if (index > -1) {
-                    newValue.splice(index, 1);
-                  }
-                }
-                onChange({ target: { name, value: newValue } } as unknown as React.ChangeEvent<HTMLInputElement>);
-              }}
-              className='form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out'
-            />
-            <span className='text-gray-700'>{item}</span>
-          </label>
-        ))}
-      </div>
-    );
-  } else {
-    return (
-      <label className='flex items-center space-x-2 cursor-pointer'>
-        <input
-          type='checkbox'
-          id={id}
-          name={name}
-          checked={value as boolean}
-          onChange={onChange}
-          className='form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out'
-        />
-        <span className='text-gray-700'>{helperText ?? label}</span>
-      </label>
+      <fieldset className='space-y-2'>
+        <legend className='text-sm font-semibold text-gray-800'>{label}</legend>
+        {items.map((item) => {
+          const optionValue = toOptionValue(item);
+          const elementId = `${id}-${optionValue.replace(/[\W_]+/g, '').toLowerCase()}`;
+          const checked = Array.isArray(value) ? value.includes(optionValue) : false;
+          return (
+            <label key={optionValue} htmlFor={elementId} className='flex items-center gap-2 text-sm text-gray-700'>
+              <input
+                type='checkbox'
+                id={elementId}
+                name={`${name}[]`}
+                checked={checked}
+                disabled={disabled}
+                onChange={(event) => handleMultiChange(item, event.target.checked)}
+                className='h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+              />
+              <span>{toOptionLabel(item)}</span>
+            </label>
+          );
+        })}
+        {helperText && <p className='text-sm text-gray-500'>{helperText}</p>}
+      </fieldset>
     );
   }
+
+  return (
+    <label htmlFor={id} className='flex items-center gap-2 text-sm text-gray-700'>
+      <input
+        type='checkbox'
+        id={id}
+        name={name}
+        checked={Boolean(value)}
+        disabled={disabled}
+        onChange={handleSingleChange}
+        className='h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+      />
+      <span>{helperText ?? label}</span>
+    </label>
+  );
 }

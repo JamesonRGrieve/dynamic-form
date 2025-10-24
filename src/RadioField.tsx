@@ -1,42 +1,42 @@
-import React from 'react';
-
-interface RadioFieldProps {
-  id: string;
-  value: any;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  items: any[];
-  name: string;
+export interface RadioOption {
+  value: string;
+  label: string;
 }
 
-export default function RadioField({ id, value, onChange, items, name }: RadioFieldProps) {
-  return (
-    <div id={id} role='radiogroup' aria-labelledby={id}>
-      {items?.map((item: any, index: number) => {
-        const itemId = (item.value ?? item).replace(/[\W_]+/g, '');
-        const itemValue = item.value ?? item;
-        const itemLabel = item.label ?? item;
+export interface RadioFieldProps {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  items: RadioOption[];
+  name: string;
+  label?: string;
+  disabled?: boolean;
+}
 
+export function RadioField({ id, value, onChange, items, name, label, disabled = false }: RadioFieldProps) {
+  return (
+    <fieldset id={id} role='radiogroup' aria-labelledby={`${id}-legend`} className='space-y-2'>
+      <legend id={`${id}-legend`} className='text-sm font-semibold text-gray-800'>
+        {label ?? name}
+      </legend>
+      {items.map((item) => {
+        const itemId = `${id}-${item.value.replace(/[\W_]+/g, '').toLowerCase()}`;
         return (
-          <label key={index} htmlFor={itemId} className='flex items-center mb-2 cursor-pointer'>
+          <label key={item.value} htmlFor={itemId} className='flex items-center gap-2 text-sm text-gray-700'>
             <input
               type='radio'
               id={itemId}
               name={name}
-              value={itemValue}
-              checked={value === itemValue}
-              onChange={onChange}
-              className='hidden'
+              value={item.value}
+              checked={item.value === value}
+              disabled={disabled}
+              onChange={(event) => onChange(event.target.value)}
+              className='h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500'
             />
-            <div
-              className={`w-5 h-5 border rounded-full mr-2 flex items-center justify-center
-              ${value === itemValue ? 'border-blue-500' : 'border-gray-300'}`}
-            >
-              {value === itemValue && <div className='w-3 h-3 bg-blue-500 rounded-full' />}
-            </div>
-            <span className='text-gray-700'>{itemLabel}</span>
+            <span>{item.label}</span>
           </label>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

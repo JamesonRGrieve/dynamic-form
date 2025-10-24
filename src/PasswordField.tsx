@@ -1,18 +1,16 @@
-import React from 'react';
-import TextField from './TextField';
+import type { InputHTMLAttributes } from 'react';
+import { TextField } from './TextField';
 
-interface PasswordFieldProps {
+export interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   id?: string;
   value?: string;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (value: string) => void;
   helperText?: string;
   label?: string;
   name?: string;
-  autoComplete?: string;
-  placeholder?: string;
 }
 
-export default function PasswordField({
+export function PasswordField({
   id = 'password',
   value,
   onChange,
@@ -21,20 +19,22 @@ export default function PasswordField({
   placeholder = 'Enter your password',
   label = 'Password',
   autoComplete = 'current-password',
+  disabled = false,
+  ...rest
 }: PasswordFieldProps) {
   return (
     <TextField
-      {...{
-        id,
-        value,
-        onChange,
-        placeholder,
-        helperText,
-        label,
-        name,
-        autoComplete,
-        type: 'password',
-      }}
+      {...rest}
+      id={id}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      helperText={helperText}
+      label={label}
+      name={name}
+      autoComplete={autoComplete}
+      type='password'
+      disabled={disabled}
     />
   );
 }
