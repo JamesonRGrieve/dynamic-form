@@ -654,3 +654,15 @@ FodyWeavers.xsd
 metadata.json
 test.ipynb
 *storybook.log
+
+# Ratchet coverage artifacts (regenerated on every run; baselines are checked in)
+.symmetry-coverage.json
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Build / TS incremental cache
+*.tsbuildinfo
