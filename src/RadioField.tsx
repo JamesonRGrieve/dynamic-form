@@ -1,23 +1,28 @@
 import React from 'react';
 
+export type RadioItem = string | { value: string; label?: string };
+
 interface RadioFieldProps {
   id: string;
-  value: any;
+  value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  items: any[];
+  items: RadioItem[];
   name: string;
 }
 
-export default function RadioField({ id, value, onChange, items, name }: RadioFieldProps) {
+const itemValueOf = (item: RadioItem): string => (typeof item === 'string' ? item : item.value);
+const itemLabelOf = (item: RadioItem): string => (typeof item === 'string' ? item : (item.label ?? item.value));
+
+export default function RadioField({ id, value, onChange, items, name }: RadioFieldProps): React.ReactElement {
   return (
     <div id={id} role='radiogroup' aria-labelledby={id}>
-      {items?.map((item: any, index: number) => {
-        const itemId = (item.value ?? item).replace(/[\W_]+/g, '');
-        const itemValue = item.value ?? item;
-        const itemLabel = item.label ?? item;
+      {items?.map((item) => {
+        const itemValue = itemValueOf(item);
+        const itemLabel = itemLabelOf(item);
+        const itemId = itemValue.replace(/[\W_]+/g, '');
 
         return (
-          <label key={index} htmlFor={itemId} className='flex items-center mb-2 cursor-pointer'>
+          <label key={itemValue} htmlFor={itemId} className='flex items-center mb-2 cursor-pointer'>
             <input
               type='radio'
               id={itemId}

@@ -11,7 +11,7 @@ export type Message = {
   level: string;
   value: string;
 };
-export type Field = {
+export type FieldDefinition = {
   label: string;
   description?: string;
   autoComplete?: string;
@@ -25,7 +25,7 @@ export type Field = {
 };
 export type FieldChangeHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, nameID: string) => void;
 
-export type FieldProps = Field & {
+export type FieldProps = FieldDefinition & {
   nameID: string;
   value?: string;
   onChange?: FieldChangeHandler;
@@ -59,11 +59,11 @@ const FieldInput: React.FC<FieldProps> = ({
     case 'password':
       return <PasswordField {...commonProps} value={value} autoComplete={autoComplete} />;
     case 'select':
-      return <SelectField {...commonProps} value={value} items={items ?? []} />;
+      return <SelectField {...commonProps} value={value ?? ''} items={items ?? []} />;
     case 'checkbox':
       return <CheckField {...commonProps} value={['on', 'true'].includes(value?.toLowerCase() ?? '')} />;
     case 'radio':
-      return <RadioField {...commonProps} value={value} items={items ?? []} />;
+      return <RadioField {...commonProps} value={value ?? ''} items={items ?? []} />;
     default:
       return <TextField {...commonProps} value={value} autoComplete={autoComplete} />;
   }
@@ -82,9 +82,9 @@ const Field: React.FC<FieldProps> = ({ nameID, label, description, type = 'text'
       {messages && (
         <div className={cn('transition-all', messages.length > 0 ? 'block' : 'hidden')}>
           {/* Should render messages as a map of MUI Alert's */}
-          {messages?.map((message, index) => (
+          {messages?.map((message) => (
             <div
-              key={index}
+              key={`${message.level}-${message.value}`}
               className={`mt-2 p-3 rounded ${
                 message.level === 'error'
                   ? 'bg-red-100 text-red-700'

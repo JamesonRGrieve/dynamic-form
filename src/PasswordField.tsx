@@ -21,7 +21,7 @@ export default function PasswordField({
   placeholder = 'Enter your password',
   label = 'Password',
   autoComplete = 'current-password',
-}: PasswordFieldProps) {
+}: PasswordFieldProps): React.ReactElement {
   return (
     <TextField
       {...{

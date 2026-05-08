@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type FormEvent, type ReactElement, type ReactNode, useCallback, useEffect, useState } from 'react';
 import timezones from 'timezones-list';
 import Field from './Field';
 import TextField from './TextField';
@@ -6,17 +6,10 @@ import { Button } from './components/ui/button';
 import { Separator } from './components/ui/separator';
 import log from './lib/log';
 
-export function toTitleCase(str: string) {
-  // Replace underscores, or capital letters (in the middle of the string) with a space and the same character
-  str = str.replace(/(_)|((?<=\w)[A-Z])/g, ' $&');
-
-  // Remove underscore if exists
-  str = str.replace(/_/g, '');
-
-  // Convert to title case
-  str = str.replace(/\w\S*/g, (txt: string) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-
-  return str;
+export function toTitleCase(input: string): string {
+  // Replace underscores, or capital letters (in the middle of the string) with a space and the same character.
+  const spaced = input.replace(/(_)|((?<=\w)[A-Z])/g, ' $&').replace(/_/g, '');
+  return spaced.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
 const typeDefaults = {
   text: '',
@@ -37,7 +30,7 @@ export type DynamicFormProps = {
   submitButtonText?: string;
   excludeFields?: string[];
   readOnlyFields?: string[];
-  toUpdate?: any;
+  toUpdate?: Record<string, DynamicFormFieldValueTypes>;
   additionalButtons?: ReactNode[];
   onConfirm: (data: { [key: string]: DynamicFormFieldValueTypes }) => void;
 };
@@ -50,7 +43,7 @@ export default function DynamicForm({
   onConfirm,
   submitButtonText = 'Submit',
   additionalButtons = [],
-}: DynamicFormProps) {
+}: DynamicFormProps): ReactElement {
   if (fields === undefined && toUpdate === undefined) {
     throw new Error('Either fields or toUpdate must be provided to DynamicForm.');
   }
@@ -66,7 +59,7 @@ export default function DynamicForm({
 
   const handleSubmit = useCallback(
     (e: FormEvent) => {
-      Object.keys(fields ?? toUpdate).forEach((key: string) => {
+      Object.keys(fields ?? toUpdate ?? {}).forEach((key: string) => {
         try {
           if (fields) {
             if (fields[key].validation && fields[key].validation(editedState[key].value)) {
@@ -77,7 +70,7 @@ export default function DynamicForm({
                 [key]: { ...prevState[key], error: 'Invalid value, please double check your input.' },
               }));
             }
-          } else if (typeof toUpdate[key as keyof typeof toUpdate] === 'number' && isNaN(Number(editedState[key].value))) {
+          } else if (typeof toUpdate?.[key] === 'number' && isNaN(Number(editedState[key].value))) {
             setEditedState((prevState) => ({
               ...prevState,
               [key]: { ...prevState[key], error: 'Expected a number for this input.' },
@@ -96,61 +89,60 @@ export default function DynamicForm({
         onConfirm(formattedForReturn);
       }
     },
-    [editedState, fields, onConfirm],
+    [editedState, fields, toUpdate, onConfirm],
   );
 
   // Initial state setup in useEffect to handle incoming props correctly
   useEffect(() => {
     const initialState: { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } = {};
-    Object.keys(fields ?? toUpdate).forEach((key) => {
+    Object.keys(fields ?? toUpdate ?? {}).forEach((key) => {
       if (!excludeFields.includes(key) && !readOnlyFields.includes(key)) {
         initialState[key] = {
           value: fields
             ? (fields[key].value ?? typeDefaults[fields[key].type as keyof typeof typeDefaults])
-            : toUpdate[key as keyof typeof toUpdate],
+            : (toUpdate?.[key] ?? ''),
           error: '',
         };
       }
     });
     setEditedState(initialState);
     log(['Setting initial dynamic form state', initialState], { client: 2 });
-  }, [fields, toUpdate]); // Depend on `fields` to re-initialize state when `fields` prop changes
+  }, [fields, toUpdate, excludeFields, readOnlyFields]);
 
   return (
     <form className='grid grid-cols-4 gap-4'>
       {Object.entries(editedState).map(
-        ([field_name, field_object]) =>
-          field_object !== undefined && (
-            <div key={field_name.toLowerCase().replaceAll(' ', '-')} className='col-span-2'>
-              {['tz', 'timezone'].includes(field_name) ? (
+        ([fieldName, fieldObject]) =>
+          fieldObject !== undefined && (
+            <div key={fieldName.toLowerCase().replaceAll(' ', '-')} className='col-span-2'>
+              {['tz', 'timezone'].includes(fieldName) ? (
                 <Field
-                  nameID={field_name.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[field_name].display ?? toTitleCase(field_name)) : toTitleCase(field_name)}
-                  value={field_object?.value?.toString() || ''}
+                  nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
+                  label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+                  value={fieldObject?.value?.toString() || ''}
                   onChange={handleChange}
-                  messages={field_object.error ? [{ level: 'error', value: field_object.error }] : []}
+                  messages={fieldObject.error ? [{ level: 'error', value: fieldObject.error }] : []}
                   type='select'
                   items={timezones
                     .sort((a, b) => {
                       if (a.utc !== b.utc) {
                         return a.utc > b.utc ? 1 : -1;
-                      } else {
-                        return a.tzCode > b.tzCode ? 1 : -1;
                       }
+                      return a.tzCode > b.tzCode ? 1 : -1;
                     })
                     .map((tz) => ({ value: tz.tzCode, label: tz.label }))}
                 />
               ) : (
                 <Field
-                  nameID={field_name.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[field_name].display ?? toTitleCase(field_name)) : toTitleCase(field_name)}
-                  value={field_object?.value?.toString() || ''}
+                  nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
+                  label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+                  value={fieldObject?.value?.toString() || ''}
                   onChange={handleChange}
-                  messages={field_object.error ? [{ level: 'error', value: field_object.error }] : []}
+                  messages={fieldObject.error ? [{ level: 'error', value: fieldObject.error }] : []}
                   type={
-                    fields && fields[field_name].type === 'boolean'
+                    fields && fields[fieldName].type === 'boolean'
                       ? 'checkbox'
-                      : (fields && fields[field_name].type === 'password') || field_name.toLowerCase().includes('password')
+                      : (fields && fields[fieldName].type === 'password') || fieldName.toLowerCase().includes('password')
                         ? 'password'
                         : 'text'
                   }
@@ -167,22 +159,23 @@ export default function DynamicForm({
       </Button>
       {readOnlyFields.length > 0 && <Separator className='col-span-4' />}
       {readOnlyFields.map((fieldName) => {
+        const value = toUpdate?.[fieldName];
+        if (value === undefined) {
+          return null;
+        }
         return (
-          toUpdate?.[fieldName as keyof typeof toUpdate] !== undefined && (
-            <div className='col-span-2' key={fieldName.toLowerCase().replaceAll(' ', '-')}>
-              <div className='w-full my-4'>
-                <TextField
-                  // fullWidth
-                  onChange={() => null}
-                  id={fieldName.toLowerCase().replaceAll(' ', '-')}
-                  name={fieldName.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
-                  value={toUpdate[fieldName as keyof typeof toUpdate]?.toString() || ''}
-                  disabled
-                />
-              </div>
+          <div className='col-span-2' key={fieldName.toLowerCase().replaceAll(' ', '-')}>
+            <div className='w-full my-4'>
+              <TextField
+                onChange={() => undefined}
+                id={fieldName.toLowerCase().replaceAll(' ', '-')}
+                name={fieldName.toLowerCase().replaceAll(' ', '-')}
+                label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+                value={value.toString()}
+                disabled
+              />
             </div>
-          )
+          </div>
         );
       })}
 

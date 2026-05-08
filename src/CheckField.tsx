@@ -10,14 +10,22 @@ interface CheckFieldProps {
   items?: string[];
 }
 
-export default function CheckField({ id, name, value, onChange, helperText, label, items }: CheckFieldProps) {
+export default function CheckField({
+  id,
+  name,
+  value,
+  onChange,
+  helperText,
+  label,
+  items,
+}: CheckFieldProps): React.ReactElement {
   const isMulti = Array.isArray(items) && items.length > 0;
 
   if (isMulti) {
     return (
       <div className='space-y-2'>
-        {items.map((item, index) => (
-          <label key={index} className='flex items-center space-x-2 cursor-pointer'>
+        {items.map((item) => (
+          <label key={item} className='flex items-center space-x-2 cursor-pointer'>
             <input
               type='checkbox'
               id={`${id}_${item.replace(/[\W_]+/g, '')}`}

@@ -10,15 +10,20 @@ import {
   SelectValue,
 } from './components/ui/select';
 
+export type SelectItemOption = string | { value: string; label?: string };
+
 interface SelectFieldProps {
   id: string;
-  value: any;
+  value: string;
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-  items: any[];
+  items: SelectItemOption[];
   name: string;
   label: string;
   placeholder?: string;
 }
+
+const optionValueOf = (item: SelectItemOption): string => (typeof item === 'string' ? item : item.value);
+const optionLabelOf = (item: SelectItemOption): string => (typeof item === 'string' ? item : (item.label ?? item.value));
 
 export default function SelectField({
   id,
@@ -28,9 +33,9 @@ export default function SelectField({
   name,
   label,
   placeholder = 'Select an option',
-}: SelectFieldProps) {
+}: SelectFieldProps): React.ReactElement {
   // TODO: Update the onChange in the interface (this requires refactoring the components that use it)
-  const handleValueChange = (selectedValue: string) => {
+  const handleValueChange = (selectedValue: string): void => {
     const event = {
       target: { value: selectedValue, name },
     } as React.ChangeEvent<HTMLSelectElement>;
@@ -48,11 +53,14 @@ export default function SelectField({
         <SelectContent>
           <SelectGroup>
             <SelectLabel>{label}</SelectLabel>
-            {items?.map((item: any, index: number) => (
-              <SelectItem key={index} value={item.value ?? item}>
-                {item.label ?? item}
-              </SelectItem>
-            ))}
+            {items?.map((item) => {
+              const optionValue = optionValueOf(item);
+              return (
+                <SelectItem key={optionValue} value={optionValue}>
+                  {optionLabelOf(item)}
+                </SelectItem>
+              );
+            })}
           </SelectGroup>
         </SelectContent>
       </Select>
