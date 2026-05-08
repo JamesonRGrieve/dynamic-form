@@ -17,13 +17,7 @@ export const Default = (args: any) => {
   const [value, setValue] = useState('');
 
   return (
-    <TextField
-      {...args}
-      id="text-field"
-      name="example"
-      value={value}
-      onChange={(event) => setValue(event.target.value)}
-    />
+    <TextField {...args} id='text-field' name='example' value={value} onChange={(event) => setValue(event.target.value)} />
   );
 };
 
@@ -33,11 +27,11 @@ export const WithError = (args: any) => {
   return (
     <TextField
       {...args}
-      id="text-field-error"
-      name="example-error"
+      id='text-field-error'
+      name='example-error'
       value={value}
       onChange={(event) => setValue(event.target.value)}
-      error="This field is required."
+      error='This field is required.'
     />
   );
 };
@@ -48,13 +42,13 @@ export const PasswordField = (args: any) => {
   return (
     <TextField
       {...args}
-      id="password-field"
-      name="password"
+      id='password-field'
+      name='password'
       value={value}
       onChange={(event) => setValue(event.target.value)}
-      type="password"
-      label="Password"
-      placeholder="Enter your password"
+      type='password'
+      label='Password'
+      placeholder='Enter your password'
     />
   );
 };

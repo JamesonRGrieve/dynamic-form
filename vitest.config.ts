@@ -20,14 +20,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        'node_modules/**',
-        'dist/**',
-        '**/*.test.{ts,tsx}',
-        '**/*.stories.{ts,tsx}',
-        'src/index.ts',
-        'src/app/**',
-      ],
+      exclude: ['node_modules/**', 'dist/**', '**/*.test.{ts,tsx}', '**/*.stories.{ts,tsx}', 'src/index.ts', 'src/app/**'],
     },
   },
 });

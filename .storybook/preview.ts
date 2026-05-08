@@ -13,7 +13,6 @@ const preview = {
       // Instead of JSX, we use the preset layout provided by Storybook
       // This automatically includes Title, Subtitle, Description, Primary, Controls, and Stories
       // in the standard layout
-
     },
     nextjs: {
       appDirectory: true, // Set to true if your project uses the app directory

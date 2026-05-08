@@ -32,27 +32,39 @@
     "storybook-build": "storybook build",
     "storybook-deploy": "storybook build && gh-pages -d storybook-static",
     "build-storybook": "storybook build",
-    "check": "pnpm lint && pnpm format && pnpm typecheck && pnpm test"
+    "check": "pnpm lint:ratchet && pnpm format && pnpm typecheck:ratchet && pnpm symmetry:ratchet && pnpm test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JamesonRGrieve/dynamic-form.git"
   },
-  "keywords": ["react", "nextjs", "components"],
+  "keywords": [
+    "react",
+    "nextjs",
+    "components"
+  ],
   "author": "Jameson R Grieve",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/JamesonRGrieve/dynamic-form/issues"
   },
   "homepage": "http://jamesonrgrieve.github.io/dynamic-form",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "_moduleAliases": {
     "@": "."
   },
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./tailwind.config.js": "./dist/tailwind.config.js",
-    "./DynamicForm": "./dist/Form/DynamicForm.js"
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
