@@ -40,6 +40,9 @@ export default function CheckField({
                     newValue.splice(index, 1);
                   }
                 }
+                // Synthesizing a ChangeEvent for the multi-checkbox case so the
+                // single onChange signature works for both modes.
+                // eslint-disable-next-line no-restricted-syntax
                 onChange({ target: { name, value: newValue } } as unknown as React.ChangeEvent<HTMLInputElement>);
               }}
               className='form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out'

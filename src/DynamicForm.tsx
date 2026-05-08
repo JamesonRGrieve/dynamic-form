@@ -1,4 +1,12 @@
-import { type FormEvent, type ReactElement, type ReactNode, useCallback, useEffect, useState } from 'react';
+import {
+  type ChangeEvent,
+  type FormEvent,
+  type ReactElement,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import timezones from 'timezones-list';
 import Field from './Field';
 import TextField from './TextField';
@@ -47,10 +55,26 @@ export default function DynamicForm({
   if (fields === undefined && toUpdate === undefined) {
     throw new Error('Either fields or toUpdate must be provided to DynamicForm.');
   }
+
+  const buildInitialState = useCallback((): { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } => {
+    const initialState: { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } = {};
+    Object.keys(fields ?? toUpdate ?? {}).forEach((key) => {
+      if (!excludeFields.includes(key) && !readOnlyFields.includes(key)) {
+        initialState[key] = {
+          value: fields
+            ? (fields[key].value ?? typeDefaults[fields[key].type as keyof typeof typeDefaults])
+            : (toUpdate?.[key] ?? ''),
+          error: '',
+        };
+      }
+    });
+    return initialState;
+  }, [fields, toUpdate, excludeFields, readOnlyFields]);
+
   const [editedState, setEditedState] = useState<{ [key: string]: { value: DynamicFormFieldValueTypes; error: string } }>(
-    {},
+    buildInitialState,
   );
-  const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: string) => {
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: string) => {
     setEditedState((prevState) => ({
       ...prevState,
       [id]: { ...prevState[id], value: event.target.value },
@@ -92,22 +116,16 @@ export default function DynamicForm({
     [editedState, fields, toUpdate, onConfirm],
   );
 
-  // Initial state setup in useEffect to handle incoming props correctly
+  // Re-seed state when the incoming props change. The lazy initialiser
+  // handles the first render; this effect handles subsequent prop swaps.
+  // React 19's preferred pattern is keying the parent component, but
+  // we don't control the consumer.
   useEffect(() => {
-    const initialState: { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } = {};
-    Object.keys(fields ?? toUpdate ?? {}).forEach((key) => {
-      if (!excludeFields.includes(key) && !readOnlyFields.includes(key)) {
-        initialState[key] = {
-          value: fields
-            ? (fields[key].value ?? typeDefaults[fields[key].type as keyof typeof typeDefaults])
-            : (toUpdate?.[key] ?? ''),
-          error: '',
-        };
-      }
-    });
-    setEditedState(initialState);
-    log(['Setting initial dynamic form state', initialState], { client: 2 });
-  }, [fields, toUpdate, excludeFields, readOnlyFields]);
+    const next = buildInitialState();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setEditedState(next);
+    log(['Setting initial dynamic form state', next], { client: 2 });
+  }, [buildInitialState]);
 
   return (
     <form className='grid grid-cols-4 gap-4'>

@@ -23,7 +23,7 @@ const updateMode = args.includes('--update');
 let lintOutput;
 const lintOutputPath = resolve(tmpdir(), `dynamic-form-eslint-${process.pid}.json`);
 try {
-  execSync(`./node_modules/.bin/eslint ${ESLINT_TARGET} --ext ${ESLINT_EXTS} --format json > "${lintOutputPath}"`, {
+  execSync(`./node_modules/.bin/eslint ${ESLINT_TARGET} --format json --output-file "${lintOutputPath}"`, {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     maxBuffer: 64 * 1024 * 1024,

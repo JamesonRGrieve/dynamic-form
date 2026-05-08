@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 
-interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   id: string;
   value?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
