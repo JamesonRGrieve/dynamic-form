@@ -1,40 +1,36 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig.json",
   "compilerOptions": {
-    "target": "es5",
-    "module": "CommonJS",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "outDir": "./dist",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noImplicitAny": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "strict": false, // TODO Make this work.
+    "allowJs": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "skipLibCheck": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "strictNullChecks": false, // TODO Make this work.
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": ["../../../src/*"],
-      "@/next-log/*": ["../../../src/lib/next-log/src/*"],
-      "@/zod2gql": ["../../../src/lib/zod2gql/src"],
-      "@/auth/*": ["../../../src/components/auth/src/*"],
-      "@/appwrapper/*": ["../../../src/components/appwrapper/src/*"],
-      "@/dynamic-form/*": ["../../../src/components/dynamic-form/src/*"],
-      "@/interactive/*": ["../../../src/interactive/src/*"],
-      "@/interface/*": ["../../../src/interface/*"],
-      "@/iteration/*": ["../../../src/iteration/*"]
+      "@/*": ["./src/*"],
+      "@/dynamic-form/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "src/index.ts", "src/Style/**/*.css"],
-  "exclude": ["node_modules", "dist", "src/**/*.stories.*"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", "dist", "**/*.stories.ts", "**/*.stories.tsx", "**/*.test.ts", "**/*.test.tsx"]
 }
