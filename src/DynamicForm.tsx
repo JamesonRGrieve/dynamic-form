@@ -1,11 +1,10 @@
+import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from 'react';
 import timezones from 'timezones-list';
-
+import Field from './Field';
+import TextField from './TextField';
 import { Button } from './components/ui/button';
 import { Separator } from './components/ui/separator';
 import log from './lib/log';
-import { FormEvent, ReactNode, useCallback, useEffect, useState } from 'react';
-import Field from './Field';
-import TextField from './TextField';
 
 export function toTitleCase(str: string) {
   // Replace underscores, or capital letters (in the middle of the string) with a space and the same character
@@ -58,7 +57,7 @@ export default function DynamicForm({
   const [editedState, setEditedState] = useState<{ [key: string]: { value: DynamicFormFieldValueTypes; error: string } }>(
     {},
   );
-  const handleChange = useCallback((event: any, id?: string) => {
+  const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: string) => {
     setEditedState((prevState) => ({
       ...prevState,
       [id]: { ...prevState[id], value: event.target.value },
@@ -78,18 +77,17 @@ export default function DynamicForm({
                 [key]: { ...prevState[key], error: 'Invalid value, please double check your input.' },
               }));
             }
+          } else if (typeof toUpdate[key as keyof typeof toUpdate] === 'number' && isNaN(Number(editedState[key].value))) {
+            setEditedState((prevState) => ({
+              ...prevState,
+              [key]: { ...prevState[key], error: 'Expected a number for this input.' },
+            }));
           } else {
-            if (typeof toUpdate[key as keyof typeof toUpdate] === 'number' && isNaN(Number(editedState[key].value))) {
-              setEditedState((prevState) => ({
-                ...prevState,
-                [key]: { ...prevState[key], error: 'Expected a number for this input.' },
-              }));
-            } else {
-              setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
-            }
+            setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
           }
         } catch (error) {
-          setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: error.message } }));
+          const message = error instanceof Error ? error.message : String(error);
+          setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: message } }));
         }
         e.preventDefault();
       });

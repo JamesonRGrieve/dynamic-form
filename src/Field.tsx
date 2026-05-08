@@ -1,11 +1,11 @@
-import { Label } from './components/ui/label';
-import { cn } from './lib/utils';
 import React from 'react';
 import CheckField from './CheckField';
 import PasswordField from './PasswordField';
 import RadioField from './RadioField';
 import SelectField from './SelectField';
 import TextField from './TextField';
+import { Label } from './components/ui/label';
+import { cn } from './lib/utils';
 
 export type Message = {
   level: string;
@@ -23,10 +23,12 @@ export type Field = {
     label: string;
   }[];
 };
+export type FieldChangeHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, nameID: string) => void;
+
 export type FieldProps = Field & {
   nameID: string;
   value?: string;
-  onChange?: any;
+  onChange?: FieldChangeHandler;
   messages?: Message[];
 };
 
@@ -40,33 +42,30 @@ const FieldInput: React.FC<FieldProps> = ({
   type = 'text',
   items,
 }) => {
-  const injectedOnChange = onChange
-    ? (target: any) => {
-        onChange(target, nameID);
-      }
-    : null;
+  const injectedOnChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+    onChange?.(event, nameID);
+  };
 
   const commonProps = {
     id: nameID,
     name: nameID,
-    value,
     onChange: injectedOnChange,
     label,
   };
 
   switch (type) {
     case 'text':
-      return <TextField {...commonProps} autoComplete={autoComplete} placeholder={placeholder} />;
+      return <TextField {...commonProps} value={value} autoComplete={autoComplete} placeholder={placeholder} />;
     case 'password':
-      return <PasswordField {...commonProps} autoComplete={autoComplete} />;
+      return <PasswordField {...commonProps} value={value} autoComplete={autoComplete} />;
     case 'select':
-      return <SelectField {...commonProps} items={items} />;
+      return <SelectField {...commonProps} value={value} items={items ?? []} />;
     case 'checkbox':
-      return <CheckField {...commonProps} value={['on', 'true'].includes(value?.toLowerCase())} />;
+      return <CheckField {...commonProps} value={['on', 'true'].includes(value?.toLowerCase() ?? '')} />;
     case 'radio':
-      return <RadioField {...commonProps} items={items} />;
+      return <RadioField {...commonProps} value={value} items={items ?? []} />;
     default:
-      return <TextField {...commonProps} autoComplete={autoComplete} />;
+      return <TextField {...commonProps} value={value} autoComplete={autoComplete} />;
   }
 };
 
@@ -74,7 +73,7 @@ const Field: React.FC<FieldProps> = ({ nameID, label, description, type = 'text'
   return (
     <div className='w-full my-4'>
       {['checkbox', 'radio'].includes(type) && (
-        <Label id={nameID + '-label'} htmlFor={nameID}>
+        <Label id={`${nameID}-label`} htmlFor={nameID}>
           {label}
         </Label>
       )}
