@@ -5,16 +5,16 @@ import { Label } from './components/ui/label';
 
 export interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   id: string;
-  value?: string;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  helperText?: string;
-  label?: string;
+  value?: string | undefined;
+  onChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
+  helperText?: string | undefined;
+  label?: string | undefined;
   name: string;
-  autoComplete?: string;
-  placeholder?: string;
-  className?: string;
-  type?: string;
-  error?: string | boolean;
+  autoComplete?: string | undefined;
+  placeholder?: string | undefined;
+  className?: string | undefined;
+  type?: string | undefined;
+  error?: string | boolean | undefined;
 }
 
 const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(

@@ -2,14 +2,14 @@ import type React from 'react';
 import TextField from './TextField';
 
 interface PasswordFieldProps {
-  id?: string;
-  value?: string;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  helperText?: string;
-  label?: string;
-  name?: string;
-  autoComplete?: string;
-  placeholder?: string;
+  id?: string | undefined;
+  value?: string | undefined;
+  onChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
+  helperText?: string | undefined;
+  label?: string | undefined;
+  name?: string | undefined;
+  autoComplete?: string | undefined;
+  placeholder?: string | undefined;
 }
 
 export default function PasswordField({

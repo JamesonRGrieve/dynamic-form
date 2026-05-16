@@ -12,14 +12,14 @@ const clientVerbosity = (() => {
   if (typeof process === 'undefined') {
     return 3;
   }
-  return parseVerbosity(process.env.NEXT_PUBLIC_LOG_VERBOSITY_CLIENT);
+  return parseVerbosity(process.env['NEXT_PUBLIC_LOG_VERBOSITY_CLIENT']);
 })();
 
 const serverVerbosity = (() => {
   if (typeof process === 'undefined') {
     return 3;
   }
-  return parseVerbosity(process.env.LOG_VERBOSITY_SERVER ?? process.env.NEXT_PUBLIC_LOG_VERBOSITY_CLIENT);
+  return parseVerbosity(process.env['LOG_VERBOSITY_SERVER'] ?? process.env['NEXT_PUBLIC_LOG_VERBOSITY_CLIENT']);
 })();
 
 export default function log(messages: unknown[], options: LogOptions = {}): void {
