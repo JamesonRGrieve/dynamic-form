@@ -22,21 +22,26 @@ export function toTitleCase(input: string): string {
   const spaced = input.replace(/(_)|((?<=\w)[A-Z])/g, ' $&').replace(/_/g, '');
   return spaced.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
 }
+
 const typeDefaults = {
   text: '',
   password: '',
   number: 0,
   boolean: false,
-};
+} as const;
+
 export type DynamicFormFieldValueTypes = string | number | boolean;
+
+type DynamicFormFieldSpec = {
+  type: 'text' | 'number' | 'password' | 'boolean';
+  display?: string;
+  value?: DynamicFormFieldValueTypes;
+  validation?: (value: DynamicFormFieldValueTypes) => boolean;
+};
+
 export type DynamicFormProps = {
   fields?: {
-    [key: string]: {
-      type: 'text' | 'number' | 'password' | 'boolean';
-      display?: string;
-      value?: DynamicFormFieldValueTypes;
-      validation?: (value: DynamicFormFieldValueTypes) => boolean;
-    };
+    [key: string]: DynamicFormFieldSpec;
   };
   submitButtonText?: string;
   excludeFields?: string[];
@@ -45,6 +50,15 @@ export type DynamicFormProps = {
   additionalButtons?: ReactNode[];
   onConfirm: (data: { [key: string]: DynamicFormFieldValueTypes }) => void;
 };
+
+type FieldEntry = { value: DynamicFormFieldValueTypes; error: string };
+type EditedState = { [key: string]: FieldEntry };
+
+const EMPTY_ENTRY: FieldEntry = { value: '', error: '' };
+
+function getEntry(state: EditedState, key: string): FieldEntry {
+  return state[key] ?? EMPTY_ENTRY;
+}
 
 export default function DynamicForm({
   fields,
@@ -64,26 +78,34 @@ export default function DynamicForm({
   const readOnlyFields = readOnlyFieldsProp ?? EMPTY_STRINGS;
   const additionalButtons = additionalButtonsProp ?? EMPTY_NODES;
 
-  const buildInitialState = useCallback((): { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } => {
-    const initialState: { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } = {};
+  const buildInitialState = useCallback((): EditedState => {
+    const initialState: EditedState = {};
     Object.keys(fields ?? toUpdate ?? {}).forEach((key) => {
-      if (!excludeFields.includes(key) && !readOnlyFields.includes(key)) {
-        initialState[key] = {
-          value: fields ? (fields[key].value ?? typeDefaults[fields[key].type]) : (toUpdate?.[key] ?? ''),
-          error: '',
-        };
+      if (excludeFields.includes(key) || readOnlyFields.includes(key)) {
+        return;
       }
+      let initial: DynamicFormFieldValueTypes;
+      if (fields !== undefined) {
+        const spec = fields[key];
+        // The default tsconfig's index signature claims spec is always defined
+        // (so ESLint flags the undefined check); tsconfig.strict.json's
+        // noUncheckedIndexedAccess disagrees. Guard for both.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        initial = spec === undefined ? '' : (spec.value ?? typeDefaults[spec.type]);
+      } else {
+        initial = toUpdate?.[key] ?? '';
+      }
+      initialState[key] = { value: initial, error: '' };
     });
     return initialState;
   }, [fields, toUpdate, excludeFields, readOnlyFields]);
 
-  const [editedState, setEditedState] = useState<{ [key: string]: { value: DynamicFormFieldValueTypes; error: string } }>(
-    buildInitialState,
-  );
+  const [editedState, setEditedState] = useState<EditedState>(buildInitialState);
+
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: string) => {
     setEditedState((prevState) => ({
       ...prevState,
-      [id]: { ...prevState[id], value: event.target.value },
+      [id]: { ...getEntry(prevState, id), value: event.target.value },
     }));
   }, []);
 
@@ -91,26 +113,29 @@ export default function DynamicForm({
     (e: SyntheticEvent) => {
       Object.keys(fields ?? toUpdate ?? {}).forEach((key: string) => {
         try {
-          if (fields) {
-            if (fields[key].validation?.(editedState[key].value) === true) {
-              setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
+          if (fields !== undefined) {
+            const spec: DynamicFormFieldSpec | undefined = fields[key];
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- noUncheckedIndexedAccess sees spec as possibly undefined
+            const valid = spec?.validation?.(getEntry(editedState, key).value) === true;
+            if (valid) {
+              setEditedState((prevState) => ({ ...prevState, [key]: { ...getEntry(prevState, key), error: '' } }));
             } else {
               setEditedState((prevState) => ({
                 ...prevState,
-                [key]: { ...prevState[key], error: 'Invalid value, please double check your input.' },
+                [key]: { ...getEntry(prevState, key), error: 'Invalid value, please double check your input.' },
               }));
             }
-          } else if (typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(editedState[key].value))) {
+          } else if (typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(getEntry(editedState, key).value))) {
             setEditedState((prevState) => ({
               ...prevState,
-              [key]: { ...prevState[key], error: 'Expected a number for this input.' },
+              [key]: { ...getEntry(prevState, key), error: 'Expected a number for this input.' },
             }));
           } else {
-            setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
+            setEditedState((prevState) => ({ ...prevState, [key]: { ...getEntry(prevState, key), error: '' } }));
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : String(error);
-          setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: message } }));
+          setEditedState((prevState) => ({ ...prevState, [key]: { ...getEntry(prevState, key), error: message } }));
         }
         e.preventDefault();
       });
@@ -133,6 +158,21 @@ export default function DynamicForm({
     log(['Setting initial dynamic form state', next], { client: 2 });
   }, [buildInitialState]);
 
+  function fieldDisplay(fieldName: string): string {
+    return fields?.[fieldName]?.display ?? toTitleCase(fieldName);
+  }
+
+  function fieldKind(fieldName: string): 'checkbox' | 'password' | 'text' {
+    const t = fields?.[fieldName]?.type;
+    if (t === 'boolean') {
+      return 'checkbox';
+    }
+    if (t === 'password' || fieldName.toLowerCase().includes('password')) {
+      return 'password';
+    }
+    return 'text';
+  }
+
   return (
     <form className='grid grid-cols-4 gap-4'>
       {Object.entries(editedState).map(([fieldName, fieldObject]) => (
@@ -140,7 +180,7 @@ export default function DynamicForm({
           {['tz', 'timezone'].includes(fieldName) ? (
             <Field
               nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
-              label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+              label={fieldDisplay(fieldName)}
               value={fieldObject.value.toString()}
               onChange={handleChange}
               messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
@@ -157,17 +197,11 @@ export default function DynamicForm({
           ) : (
             <Field
               nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
-              label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+              label={fieldDisplay(fieldName)}
               value={fieldObject.value.toString()}
               onChange={handleChange}
               messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
-              type={
-                fields?.[fieldName].type === 'boolean'
-                  ? 'checkbox'
-                  : fields?.[fieldName].type === 'password' || fieldName.toLowerCase().includes('password')
-                    ? 'password'
-                    : 'text'
-              }
+              type={fieldKind(fieldName)}
             />
           )}
         </div>
@@ -191,7 +225,7 @@ export default function DynamicForm({
                 onChange={() => undefined}
                 id={fieldName.toLowerCase().replaceAll(' ', '-')}
                 name={fieldName.toLowerCase().replaceAll(' ', '-')}
-                label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+                label={fieldDisplay(fieldName)}
                 value={value.toString()}
                 disabled
               />
