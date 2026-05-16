@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import CheckField from './CheckField';
 import PasswordField from './PasswordField';
 import RadioField from './RadioField';

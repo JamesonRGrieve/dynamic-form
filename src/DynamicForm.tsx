@@ -92,7 +92,7 @@ export default function DynamicForm({
                 [key]: { ...prevState[key], error: 'Invalid value, please double check your input.' },
               }));
             }
-          } else if (typeof toUpdate?.[key] === 'number' && isNaN(Number(editedState[key].value))) {
+          } else if (typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(editedState[key].value))) {
             setEditedState((prevState) => ({
               ...prevState,
               [key]: { ...prevState[key], error: 'Expected a number for this input.' },
