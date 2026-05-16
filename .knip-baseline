@@ -1,0 +1,32 @@
+{
+  "strict": [
+    "classMembers",
+    "duplicates",
+    "enumMembers",
+    "exports",
+    "files",
+    "namespaceMembers",
+    "optionalPeerDependencies",
+    "types",
+    "unlisted",
+    "unresolved"
+  ],
+  "totals": {
+    "total": 67
+  },
+  "counts": {
+    "files": 0,
+    "dependencies": 51,
+    "devDependencies": 15,
+    "optionalPeerDependencies": 0,
+    "unlisted": 0,
+    "unresolved": 0,
+    "binaries": 1,
+    "exports": 0,
+    "types": 0,
+    "enumMembers": 0,
+    "classMembers": 0,
+    "duplicates": 0,
+    "namespaceMembers": 0
+  }
+}

@@ -3,15 +3,7 @@ import path from 'path';
 
 const config: StorybookConfig = {
   stories: ['../src/Welcome.stories.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx|mdx)'],
-  addons: [
-    '@storybook/addon-actions',
-    '@storybook/addon-styling-webpack',
-    '@storybook/addon-themes',
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-    '@storybook/addon-docs',
-  ],
+  addons: ['@storybook/addon-links', '@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-onboarding'],
   framework: {
     name: '@storybook/nextjs',
     options: {},

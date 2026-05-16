@@ -1,0 +1,20 @@
+[
+  {
+    "name": "index (entry, brotli)",
+    "path": "dist/index.js",
+    "limit": "1 KB",
+    "ignore": ["react", "react-dom", "next"]
+  },
+  {
+    "name": "DynamicForm (component, brotli)",
+    "path": "dist/DynamicForm.js",
+    "limit": "75 KB",
+    "ignore": ["react", "react-dom", "next"]
+  },
+  {
+    "name": "Field (primitive, brotli)",
+    "path": "dist/Field.js",
+    "limit": "52 KB",
+    "ignore": ["react", "react-dom", "next"]
+  }
+]

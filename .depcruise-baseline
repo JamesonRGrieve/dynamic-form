@@ -1,0 +1,10 @@
+{
+  "strict": [],
+  "totals": {
+    "totalViolations": 2
+  },
+  "byRule": {
+    "hooks-no-import-components": 1,
+    "no-orphans": 1
+  }
+}
