@@ -26,10 +26,5 @@
     "selector-class-pattern": null,
     "custom-property-pattern": null
   },
-  "ignoreFiles": [
-    "dist/**",
-    "storybook-static/**",
-    "node_modules/**",
-    "src/app/**"
-  ]
+  "ignoreFiles": ["dist/**", "storybook-static/**", "node_modules/**", "src/app/**"]
 }

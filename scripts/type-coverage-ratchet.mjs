@@ -81,7 +81,9 @@ if (isAtCeiling && !priorStrict) {
 }
 
 if (covered > priorCovered) {
-  console.log(`[type-coverage-ratchet] OK: covered ${priorCovered} -> ${covered} (${percent}%). pnpm type-coverage:ratchet:update`);
+  console.log(
+    `[type-coverage-ratchet] OK: covered ${priorCovered} -> ${covered} (${percent}%). pnpm type-coverage:ratchet:update`,
+  );
 } else {
   console.log(`[type-coverage-ratchet] OK: ${covered}/${total} (${percent}%)${strict ? ' [strict]' : ''}`);
 }

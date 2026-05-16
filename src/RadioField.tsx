@@ -16,7 +16,7 @@ const itemLabelOf = (item: RadioItem): string => (typeof item === 'string' ? ite
 export default function RadioField({ id, value, onChange, items, name }: RadioFieldProps): React.ReactElement {
   return (
     <div id={id} role='radiogroup' aria-labelledby={id}>
-      {items?.map((item) => {
+      {items.map((item) => {
         const itemValue = itemValueOf(item);
         const itemLabel = itemLabelOf(item);
         const itemId = itemValue.replace(/[\W_]+/g, '');

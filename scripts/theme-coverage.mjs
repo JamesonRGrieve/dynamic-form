@@ -29,18 +29,53 @@ function walk(dir, exts) {
 
 const CSS_SOURCES = walk('src', ['.css', '.scss']).sort();
 
-const COLOR_PROPS = ['color', 'background', 'background-color', 'border', 'border-color', 'fill', 'stroke', 'outline', 'box-shadow', 'text-shadow'];
+const COLOR_PROPS = [
+  'color',
+  'background',
+  'background-color',
+  'border',
+  'border-color',
+  'fill',
+  'stroke',
+  'outline',
+  'box-shadow',
+  'text-shadow',
+];
 const SPACING_PROPS = [
-  'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'margin-inline', 'margin-block',
-  'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'padding-inline', 'padding-block',
-  'gap', 'row-gap', 'column-gap',
-  'top', 'right', 'bottom', 'left', 'inset',
-  'width', 'height', 'min-width', 'min-height', 'max-width', 'max-height',
+  'margin',
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'margin-inline',
+  'margin-block',
+  'padding',
+  'padding-top',
+  'padding-right',
+  'padding-bottom',
+  'padding-left',
+  'padding-inline',
+  'padding-block',
+  'gap',
+  'row-gap',
+  'column-gap',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'inset',
+  'width',
+  'height',
+  'min-width',
+  'min-height',
+  'max-width',
+  'max-height',
 ];
 
 const HEX = /#[0-9a-f]{3,8}\b/gi;
 const RGB_HSL = /(?:rgb|rgba|hsl|hsla)\s*\(\s*[^)]*\)/gi;
-const NAMED = /\b(?:white|black|red|green|blue|yellow|orange|purple|pink|cyan|magenta|gray|grey|silver|gold|maroon|navy|teal|olive|lime|aqua|fuchsia)\b/gi;
+const NAMED =
+  /\b(?:white|black|red|green|blue|yellow|orange|purple|pink|cyan|magenta|gray|grey|silver|gold|maroon|navy|teal|olive|lime|aqua|fuchsia)\b/gi;
 const LITERAL_LEN = /(?<![\w.-])-?\d+(?:\.\d+)?(?:px|rem|em|%)\b/g;
 
 function isTokenized(value) {

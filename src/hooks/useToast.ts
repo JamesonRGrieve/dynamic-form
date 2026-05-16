@@ -78,11 +78,11 @@ export const reducer = (state: State, action: Action): State => {
     case 'DISMISS_TOAST': {
       const { toastId } = action;
 
-      if (toastId) {
+      if (toastId !== undefined && toastId !== '') {
         addToRemoveQueue(toastId);
       } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id);
+        state.toasts.forEach((existing) => {
+          addToRemoveQueue(existing.id);
         });
       }
 
@@ -180,7 +180,7 @@ function useToast(): UseToastResult {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+  }, []);
 
   return {
     ...state,

@@ -15,10 +15,11 @@ const updateMode = args.has('--update');
 
 let raw = '';
 try {
-  raw = execSync(
-    `./node_modules/.bin/stylelint "src/**/*.{css,scss}" --formatter json --allow-empty-input`,
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 128 * 1024 * 1024 },
-  );
+  raw = execSync(`./node_modules/.bin/stylelint "src/**/*.{css,scss}" --formatter json --allow-empty-input`, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 128 * 1024 * 1024,
+  });
 } catch (err) {
   raw = err.stdout?.toString() ?? '';
 }

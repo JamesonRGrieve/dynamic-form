@@ -17,12 +17,7 @@ if (!existsSync(LOCK)) {
   process.exit(2);
 }
 
-const ALLOWED_HOSTS = new Set([
-  'registry.npmjs.org',
-  'codeload.github.com',
-  'github.com',
-  'api.github.com',
-]);
+const ALLOWED_HOSTS = new Set(['registry.npmjs.org', 'codeload.github.com', 'github.com', 'api.github.com']);
 const ALLOWED_SCHEMES = new Set(['https:', 'git+ssh:', 'git+https:']);
 
 const lock = readFileSync(LOCK, 'utf8');

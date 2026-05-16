@@ -1,8 +1,8 @@
 import {
   type ChangeEvent,
-  type FormEvent,
   type ReactElement,
   type ReactNode,
+  type SyntheticEvent,
   useCallback,
   useEffect,
   useState,
@@ -17,7 +17,7 @@ import log from './lib/log';
 export function toTitleCase(input: string): string {
   // Replace underscores, or capital letters (in the middle of the string) with a space and the same character.
   const spaced = input.replace(/(_)|((?<=\w)[A-Z])/g, ' $&').replace(/_/g, '');
-  return spaced.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+  return spaced.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
 }
 const typeDefaults = {
   text: '',
@@ -61,9 +61,7 @@ export default function DynamicForm({
     Object.keys(fields ?? toUpdate ?? {}).forEach((key) => {
       if (!excludeFields.includes(key) && !readOnlyFields.includes(key)) {
         initialState[key] = {
-          value: fields
-            ? (fields[key].value ?? typeDefaults[fields[key].type as keyof typeof typeDefaults])
-            : (toUpdate?.[key] ?? ''),
+          value: fields ? (fields[key].value ?? typeDefaults[fields[key].type]) : (toUpdate?.[key] ?? ''),
           error: '',
         };
       }
@@ -82,11 +80,11 @@ export default function DynamicForm({
   }, []);
 
   const handleSubmit = useCallback(
-    (e: FormEvent) => {
+    (e: SyntheticEvent) => {
       Object.keys(fields ?? toUpdate ?? {}).forEach((key: string) => {
         try {
           if (fields) {
-            if (fields[key].validation && fields[key].validation(editedState[key].value)) {
+            if (fields[key].validation?.(editedState[key].value) === true) {
               setEditedState((prevState) => ({ ...prevState, [key]: { ...prevState[key], error: '' } }));
             } else {
               setEditedState((prevState) => ({
@@ -129,46 +127,43 @@ export default function DynamicForm({
 
   return (
     <form className='grid grid-cols-4 gap-4'>
-      {Object.entries(editedState).map(
-        ([fieldName, fieldObject]) =>
-          fieldObject !== undefined && (
-            <div key={fieldName.toLowerCase().replaceAll(' ', '-')} className='col-span-2'>
-              {['tz', 'timezone'].includes(fieldName) ? (
-                <Field
-                  nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
-                  value={fieldObject?.value?.toString() || ''}
-                  onChange={handleChange}
-                  messages={fieldObject.error ? [{ level: 'error', value: fieldObject.error }] : []}
-                  type='select'
-                  items={timezones
-                    .sort((a, b) => {
-                      if (a.utc !== b.utc) {
-                        return a.utc > b.utc ? 1 : -1;
-                      }
-                      return a.tzCode > b.tzCode ? 1 : -1;
-                    })
-                    .map((tz) => ({ value: tz.tzCode, label: tz.label }))}
-                />
-              ) : (
-                <Field
-                  nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
-                  label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
-                  value={fieldObject?.value?.toString() || ''}
-                  onChange={handleChange}
-                  messages={fieldObject.error ? [{ level: 'error', value: fieldObject.error }] : []}
-                  type={
-                    fields && fields[fieldName].type === 'boolean'
-                      ? 'checkbox'
-                      : (fields && fields[fieldName].type === 'password') || fieldName.toLowerCase().includes('password')
-                        ? 'password'
-                        : 'text'
+      {Object.entries(editedState).map(([fieldName, fieldObject]) => (
+        <div key={fieldName.toLowerCase().replaceAll(' ', '-')} className='col-span-2'>
+          {['tz', 'timezone'].includes(fieldName) ? (
+            <Field
+              nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
+              label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+              value={fieldObject.value.toString()}
+              onChange={handleChange}
+              messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
+              type='select'
+              items={timezones
+                .sort((a, b) => {
+                  if (a.utc !== b.utc) {
+                    return a.utc > b.utc ? 1 : -1;
                   }
-                />
-              )}
-            </div>
-          ),
-      )}
+                  return a.tzCode > b.tzCode ? 1 : -1;
+                })
+                .map((tz) => ({ value: tz.tzCode, label: tz.label }))}
+            />
+          ) : (
+            <Field
+              nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
+              label={fields ? (fields[fieldName].display ?? toTitleCase(fieldName)) : toTitleCase(fieldName)}
+              value={fieldObject.value.toString()}
+              onChange={handleChange}
+              messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
+              type={
+                fields?.[fieldName].type === 'boolean'
+                  ? 'checkbox'
+                  : fields?.[fieldName].type === 'password' || fieldName.toLowerCase().includes('password')
+                    ? 'password'
+                    : 'text'
+              }
+            />
+          )}
+        </div>
+      ))}
       <Button
         className={`col-span-2 ${readOnlyFields.length > 0 && additionalButtons.length > 0 ? 'col-span-2' : ''}`}
         onClick={handleSubmit}

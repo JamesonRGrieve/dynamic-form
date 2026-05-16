@@ -53,7 +53,7 @@ export default function SelectField({
         <SelectContent>
           <SelectGroup>
             <SelectLabel>{label}</SelectLabel>
-            {items?.map((item) => {
+            {items.map((item) => {
               const optionValue = optionValueOf(item);
               return (
                 <SelectItem key={optionValue} value={optionValue}>

@@ -26,10 +26,12 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextFiel
       <Input
         {...props}
         {...{ id, value, onChange, name, autoComplete, placeholder, type, ref }}
-        className={`border ${error ? 'border-red-500' : 'border-gray-300'} ${className}`}
+        className={`border ${error !== undefined && error !== false && error !== '' ? 'border-red-500' : 'border-gray-300'} ${className ?? ''}`}
       />
-      {error && typeof error === 'string' && <p className='text-sm text-red-500'>{error}</p>}
-      {!error && helperText && <p className='text-sm text-gray-500'>{helperText}</p>}
+      {typeof error === 'string' && error !== '' && <p className='text-sm text-red-500'>{error}</p>}
+      {(error === undefined || error === false || error === '') && helperText !== undefined && helperText !== '' && (
+        <p className='text-sm text-gray-500'>{helperText}</p>
+      )}
     </div>
   );
 });

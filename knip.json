@@ -1,11 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": [
-    "src/index.ts",
-    "src/**/*.stories.@(ts|tsx)",
-    ".storybook/{main,preview}.@(ts|tsx|js)",
-    "scripts/**/*.mjs"
-  ],
+  "entry": ["src/index.ts", "src/**/*.stories.@(ts|tsx)", ".storybook/{main,preview}.@(ts|tsx|js)", "scripts/**/*.mjs"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": ["dist/**", "storybook-static/**"],
   "ignoreDependencies": []

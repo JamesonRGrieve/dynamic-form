@@ -77,7 +77,11 @@ if (strictViolations.length) {
 const out = {
   strict: [...strict].sort(),
   totals: { totalViolations: Object.values(byRule).reduce((a, b) => a + b, 0) },
-  byRule: Object.fromEntries(Object.keys(byRule).sort().map((r) => [r, byRule[r]])),
+  byRule: Object.fromEntries(
+    Object.keys(byRule)
+      .sort()
+      .map((r) => [r, byRule[r]]),
+  ),
 };
 const serialized = JSON.stringify(out, null, 2) + '\n';
 

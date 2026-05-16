@@ -32,8 +32,7 @@ module.exports = {
     {
       name: 'components-no-import-hooks-directly',
       severity: 'warn',
-      comment:
-        'Components should consume hooks via re-exports from index, not reach into src/hooks/* internals.',
+      comment: 'Components should consume hooks via re-exports from index, not reach into src/hooks/* internals.',
       from: { path: '^src/components/' },
       to: { path: '^src/hooks/' },
     },
