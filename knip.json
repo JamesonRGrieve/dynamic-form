@@ -3,5 +3,12 @@
   "entry": ["src/index.ts", "src/**/*.stories.@(ts|tsx)", ".storybook/{main,preview}.@(ts|tsx|js)", "scripts/**/*.mjs"],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": ["dist/**", "storybook-static/**"],
-  "ignoreDependencies": []
+  "ignoreDependencies": [
+    "@testing-library/react",
+    "@testing-library/user-event",
+    "eslint-plugin-eslint-comments",
+    "eslint-plugin-promise",
+    "playwright"
+  ],
+  "ignoreBinaries": ["gh-pages"]
 }
