@@ -14,6 +14,9 @@ import { Button } from './components/ui/button';
 import { Separator } from './components/ui/separator';
 import log from './lib/log';
 
+const EMPTY_STRINGS: readonly string[] = Object.freeze([]);
+const EMPTY_NODES: readonly ReactNode[] = Object.freeze([]);
+
 export function toTitleCase(input: string): string {
   // Replace underscores, or capital letters (in the middle of the string) with a space and the same character.
   const spaced = input.replace(/(_)|((?<=\w)[A-Z])/g, ' $&').replace(/_/g, '');
@@ -46,15 +49,20 @@ export type DynamicFormProps = {
 export default function DynamicForm({
   fields,
   toUpdate,
-  excludeFields = [],
-  readOnlyFields = [],
+  excludeFields: excludeFieldsProp,
+  readOnlyFields: readOnlyFieldsProp,
   onConfirm,
   submitButtonText = 'Submit',
-  additionalButtons = [],
+  additionalButtons: additionalButtonsProp,
 }: DynamicFormProps): ReactElement {
   if (fields === undefined && toUpdate === undefined) {
     throw new Error('Either fields or toUpdate must be provided to DynamicForm.');
   }
+  // Stabilise array defaults so they don't create fresh references each render
+  // (which would invalidate downstream memoised callbacks and loop the effect).
+  const excludeFields = excludeFieldsProp ?? EMPTY_STRINGS;
+  const readOnlyFields = readOnlyFieldsProp ?? EMPTY_STRINGS;
+  const additionalButtons = additionalButtonsProp ?? EMPTY_NODES;
 
   const buildInitialState = useCallback((): { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } => {
     const initialState: { [key: string]: { value: DynamicFormFieldValueTypes; error: string } } = {};
