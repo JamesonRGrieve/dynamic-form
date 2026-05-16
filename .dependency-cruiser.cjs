@@ -39,9 +39,10 @@ module.exports = {
     {
       name: 'hooks-no-import-components',
       severity: 'warn',
-      comment: 'Hooks must not depend on components (would create cycles).',
+      comment:
+        'Hooks must not depend on components (would create cycles). Type-only imports are allowed since they erase at runtime.',
       from: { path: '^src/hooks/' },
-      to: { path: '^src/components/' },
+      to: { path: '^src/components/', dependencyTypesNot: ['type-only'] },
     },
     {
       name: 'lib-no-import-components-or-hooks',
