@@ -1,8 +1,11 @@
 import js from '@eslint/js';
+import vitest from '@vitest/eslint-plugin';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import eslintComments from 'eslint-plugin-eslint-comments';
 import importPlugin from 'eslint-plugin-import';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import promise from 'eslint-plugin-promise';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import storybook from 'eslint-plugin-storybook';
@@ -17,6 +20,16 @@ const tsRules = {
   ...reactPlugin.configs.recommended.rules,
   ...reactHooks.configs.recommended.rules,
   ...jsxA11y.configs.recommended.rules,
+
+  // eslint-plugin-eslint-comments@3.x predates flat config and exposes no
+  // usable `.configs.recommended.rules` for ESLint v9 — wire its rules
+  // manually per workspace CLAUDE.md §7.5 fallback.
+  'eslint-comments/no-unused-disable': 'warn',
+  // eslint-plugin-promise recommended subset (manual wire — see above).
+  'promise/catch-or-return': 'warn',
+  'promise/no-nesting': 'warn',
+  'promise/no-return-wrap': 'warn',
+  'promise/always-return': 'warn',
 
   '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
   '@typescript-eslint/no-explicit-any': 'warn',
@@ -96,8 +109,45 @@ const tsRules = {
   '@typescript-eslint/promise-function-async': 'warn',
   '@typescript-eslint/return-await': ['warn', 'in-try-catch'],
 
+  'no-use-before-define': 'off',
+  '@typescript-eslint/no-use-before-define': ['warn', { functions: false, classes: false }],
+  '@typescript-eslint/no-unused-expressions': 'warn',
+  '@typescript-eslint/no-implied-eval': 'warn',
+  'no-new-native-nonconstructor': 'warn',
+  'no-duplicate-imports': 'warn',
+  'no-self-assign': 'warn',
+
   'no-shadow': 'off',
-  '@typescript-eslint/no-shadow': ['warn', { builtinGlobals: false, hoist: 'all' }],
+  '@typescript-eslint/no-shadow': [
+    'warn',
+    {
+      builtinGlobals: true,
+      hoist: 'all',
+      allow: [
+        'event',
+        'name',
+        'location',
+        'origin',
+        'parent',
+        'prompt',
+        'toolbar',
+        'status',
+        'length',
+        'top',
+        'close',
+        'open',
+        'stop',
+        'history',
+        'confirm',
+        'document',
+        'innerWidth',
+        'innerHeight',
+        'source',
+        'selection',
+        'match',
+      ],
+    },
+  ],
   'no-self-compare': 'warn',
   'no-template-curly-in-string': 'warn',
   'no-unreachable-loop': 'warn',
@@ -129,7 +179,16 @@ const tsRules = {
     },
     { selector: 'parameter', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
     { selector: 'function', format: ['camelCase', 'PascalCase'] },
+    { selector: 'method', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
+    { selector: 'typeMethod', format: ['camelCase', 'PascalCase'], leadingUnderscore: 'allow' },
+    { selector: 'classicAccessor', format: ['camelCase', 'UPPER_CASE'] },
     { selector: 'memberLike', modifiers: ['private'], format: ['camelCase'], leadingUnderscore: 'allow' },
+    {
+      selector: 'classProperty',
+      modifiers: ['static'],
+      format: ['UPPER_CASE', 'camelCase', 'PascalCase'],
+      leadingUnderscore: 'allow',
+    },
     { selector: 'typeLike', format: ['PascalCase'] },
     { selector: 'enumMember', format: ['UPPER_CASE', 'PascalCase'] },
     { selector: 'objectLiteralProperty', format: null },
@@ -151,6 +210,11 @@ const tsRules = {
     {
       selector: "TSAsExpression[typeAnnotation.type='TSAnyKeyword']",
       message: 'Avoid `as any`. Fix the type at its source.',
+    },
+    {
+      selector: 'TSTypeAnnotation > TSUnknownKeyword',
+      message:
+        '`unknown` outside `catch` is a smell. Validate at the boundary entry (Zod / type guard) and propagate the narrow type. Catch-clause variables are exempt.',
     },
   ],
 
@@ -268,6 +332,8 @@ export default [
       'jsx-a11y': jsxA11y,
       'unused-imports': unusedImports,
       import: importPlugin,
+      'eslint-comments': eslintComments,
+      promise,
       prettier: prettierPlugin,
     },
     settings: {
@@ -295,6 +361,22 @@ export default [
       'react/no-unescaped-entities': 'off',
       'react-hooks/rules-of-hooks': 'off',
       ...storybook.configs['flat/recommended'][0].rules,
+    },
+  },
+  {
+    files: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'tests/**/*.ts', 'tests/**/*.tsx'],
+    plugins: { vitest },
+    rules: {
+      ...vitest.configs.recommended.rules,
+      'vitest/no-focused-tests': 'error',
+      'vitest/no-disabled-tests': 'error',
+      'vitest/no-identical-title': 'error',
+      'vitest/consistent-test-it': ['error', { fn: 'it', withinDescribe: 'it' }],
+      'vitest/valid-expect': 'error',
+      'vitest/valid-title': 'error',
+      'vitest/no-conditional-tests': 'warn',
+      'vitest/no-conditional-in-test': 'warn',
+      'vitest/no-conditional-expect': 'error',
     },
   },
 ];

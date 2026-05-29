@@ -79,3 +79,27 @@ pnpm symmetry:ratchet[:update]
 | Tests     | Vitest + happy-dom; Playwright over built Storybook |
 | Stories   | Storybook 8 (Next.js framework)                     |
 | Style     | Functional components, hook-based state, Tailwind   |
+
+---
+
+## Ratchet Re-seed Required
+
+The ESLint / Biome rule set was hardened toward foundry parity (new `warn`-level
+rules: `@typescript-eslint/no-use-before-define`, `no-unused-expressions`,
+`no-implied-eval`, `no-new-native-nonconstructor`, `no-duplicate-imports`,
+`no-self-assign`, expanded `no-shadow` / `naming-convention`, the
+`unknown`-outside-`catch` `no-restricted-syntax` selector, `eslint-comments` +
+`promise` plugins, the `@vitest/eslint-plugin` test override, and the Biome
+`noThisInStatic` / `useFilenamingConvention` rules).
+
+These add new warnings, so after `pnpm install` run:
+
+```bash
+pnpm lint:ratchet:update
+pnpm biome:ratchet:update
+```
+
+Commit the regenerated baseline files (`.eslint-warning-baseline`,
+`.biome-baseline`) **in the same commit** as the config change, per workspace
+`../CLAUDE.md` §7.3 (ratchet baselines are bumped in the same commit that
+changes the rule set).
