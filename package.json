@@ -60,6 +60,8 @@
     "test:coverage": "vitest run --coverage",
     "test:storybook": "sh ./scripts/run-storybook-playwright-tests.sh",
     "compile": "tsc -p tsconfig.compile.json",
+    "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
+    "precommit": "pnpm compile && pnpm check",
     "dev": "pnpm storybook",
     "storybook": "storybook dev -p 6006",
     "storybook-build": "storybook build",
