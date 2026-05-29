@@ -45,17 +45,15 @@ describe('CheckField', () => {
 
     it('marks members of `value` as checked', () => {
       render(<CheckField id='c' name='c' items={['Apples', 'Bananas']} value={['Bananas']} onChange={() => undefined} />);
-      const [apples, bananas] = screen.getAllByRole('checkbox') as [HTMLInputElement, HTMLInputElement];
-      expect(apples.checked).toBe(false);
-      expect(bananas.checked).toBe(true);
+      expect(screen.getByRole('checkbox', { name: 'Apples' })).not.toBeChecked();
+      expect(screen.getByRole('checkbox', { name: 'Bananas' })).toBeChecked();
     });
 
     it('calls onChange with the updated array on toggle', async () => {
       const onChange = vi.fn();
       const user = userEvent.setup();
       render(<CheckField id='c' name='c' items={['Apples', 'Bananas']} value={[]} onChange={onChange} />);
-      const [first] = screen.getAllByRole('checkbox') as [HTMLInputElement];
-      await user.click(first);
+      await user.click(screen.getByRole('checkbox', { name: 'Apples' }));
       expect(onChange).toHaveBeenCalled();
     });
   });

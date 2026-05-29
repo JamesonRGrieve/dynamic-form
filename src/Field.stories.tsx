@@ -70,7 +70,7 @@ export const Checkbox: Story = {
         label='I agree'
         type='checkbox'
         value={value}
-        onChange={(event) => setValue(String((event.target as HTMLInputElement).checked))}
+        onChange={() => setValue((prev) => (prev === 'true' ? 'false' : 'true'))}
       />
     );
   },

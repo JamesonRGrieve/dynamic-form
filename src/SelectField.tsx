@@ -9,13 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from './components/ui/select';
+import type { FieldChangeEvent } from './types';
 
 export type SelectItemOption = string | { value: string; label?: string };
 
 interface SelectFieldProps {
   id: string;
   value: string;
-  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  onChange: (event: FieldChangeEvent) => void;
   items: SelectItemOption[];
   name: string;
   label: string;
@@ -34,11 +35,10 @@ export default function SelectField({
   label,
   placeholder = 'Select an option',
 }: SelectFieldProps): React.ReactElement {
-  // TODO: Update the onChange in the interface (this requires refactoring the components that use it)
   const handleValueChange = (selectedValue: string): void => {
-    const event = {
+    const event: FieldChangeEvent = {
       target: { value: selectedValue, name },
-    } as React.ChangeEvent<HTMLSelectElement>;
+    };
 
     onChange(event);
   };

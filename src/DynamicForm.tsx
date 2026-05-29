@@ -1,18 +1,11 @@
-import {
-  type ChangeEvent,
-  type ReactElement,
-  type ReactNode,
-  type SyntheticEvent,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import { type ReactElement, type ReactNode, type SyntheticEvent, useCallback, useEffect, useState } from 'react';
 import timezones from 'timezones-list';
 import Field from './Field';
 import TextField from './TextField';
 import { Button } from './components/ui/button';
 import { Separator } from './components/ui/separator';
 import log from './lib/log';
+import type { FieldChangeEvent } from './types';
 
 const EMPTY_STRINGS: readonly string[] = Object.freeze([]);
 const EMPTY_NODES: readonly ReactNode[] = Object.freeze([]);
@@ -102,7 +95,7 @@ export default function DynamicForm({
 
   const [editedState, setEditedState] = useState<EditedState>(buildInitialState);
 
-  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: string) => {
+  const handleChange = useCallback((event: FieldChangeEvent, id: string) => {
     setEditedState((prevState) => ({
       ...prevState,
       [id]: { ...getEntry(prevState, id), value: event.target.value },

@@ -6,6 +6,9 @@ import SelectField from './SelectField';
 import TextField from './TextField';
 import { Label } from './components/ui/label';
 import { cn } from './lib/utils';
+import type { FieldChangeEvent, FieldChangeHandler } from './types';
+
+export type { FieldChangeEvent, FieldChangeHandler } from './types';
 
 export type Message = {
   level: string;
@@ -23,7 +26,6 @@ export type FieldDefinition = {
     label: string;
   }[];
 };
-export type FieldChangeHandler = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, nameID: string) => void;
 
 export type FieldProps = FieldDefinition & {
   nameID: string;
@@ -42,7 +44,7 @@ const FieldInput: React.FC<FieldProps> = ({
   type = 'text',
   items,
 }) => {
-  const injectedOnChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+  const injectedOnChange = (event: FieldChangeEvent): void => {
     onChange?.(event, nameID);
   };
 

@@ -53,11 +53,7 @@ export const MultiCheckboxes: Story = {
         items={['Apples', 'Bananas', 'Cherries']}
         value={selected}
         onChange={(event) => {
-          // CheckField multi-mode synthesises a ChangeEvent whose target.value is
-          // the new string[]; the HTMLInputElement typing can't express that.
-          // eslint-disable-next-line no-restricted-syntax -- intentional cross-boundary cast
-          const value = event.target.value as unknown as string[];
-          setSelected(value);
+          setSelected(event.target.value);
         }}
       />
     );

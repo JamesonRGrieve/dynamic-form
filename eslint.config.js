@@ -145,6 +145,12 @@ const tsRules = {
         'source',
         'selection',
         'match',
+        // DOM globals routinely used as plain identifiers in tests / stories:
+        // `screen` is testing-library's query root; `Text` / `Number` are
+        // Storybook story-export names. None are real shadowing hazards.
+        'screen',
+        'Text',
+        'Number',
       ],
     },
   ],

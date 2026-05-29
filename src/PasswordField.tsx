@@ -1,10 +1,11 @@
 import type React from 'react';
 import TextField from './TextField';
+import type { FieldChangeEvent } from './types';
 
 interface PasswordFieldProps {
   id?: string | undefined;
   value?: string | undefined;
-  onChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
+  onChange?: ((event: FieldChangeEvent) => void) | undefined;
   helperText?: string | undefined;
   label?: string | undefined;
   name?: string | undefined;

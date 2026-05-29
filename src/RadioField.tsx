@@ -1,11 +1,12 @@
 import type React from 'react';
+import type { FieldChangeEvent } from './types';
 
 export type RadioItem = string | { value: string; label?: string };
 
 interface RadioFieldProps {
   id: string;
   value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (event: FieldChangeEvent) => void;
   items: RadioItem[];
   name: string;
 }

@@ -1,12 +1,12 @@
-import type React from 'react';
-import { forwardRef } from 'react';
+import { type InputHTMLAttributes, forwardRef } from 'react';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
+import type { FieldChangeEvent } from './types';
 
-export interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   id: string;
   value?: string | undefined;
-  onChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
+  onChange?: ((event: FieldChangeEvent) => void) | undefined;
   helperText?: string | undefined;
   label?: string | undefined;
   name: string;
