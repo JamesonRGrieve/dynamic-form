@@ -8,16 +8,19 @@ The package manager is **pnpm**. The toolchain is **TypeScript + Vite (via Story
 
 ---
 
-## Repo-Specific Direction (in addition to workspace §7.1)
+## Repo-Specific Direction (in addition to `/home/jameson/source/ai-prompts/typescript.md` + `/home/jameson/source/ai-prompts/react-next.md`)
 
-- **Accessibility is non-negotiable.** Every new component ships with the a11y-pass story by default. Form fields have associated labels; controls have appropriate ARIA roles; focus management works under keyboard navigation.
-- **Field-shared primitives go through `Field.tsx`.** No copy-paste between field components. Adding a new field type means extending `DynamicFormProps['fields'][string]['type']` and the corresponding renderer branch — never special-casing inside a consumer.
+The generic a11y-default-story rule (every component ships with the a11y-pass story by default) and the shared-primitives-through-one-`Field` rule are canonical in `/home/jameson/source/ai-prompts/react-next.md` §4 / §1. Repo-local specifics:
+
+- **Field-shared primitives go through `Field.tsx`.** Adding a new field type means extending `DynamicFormProps['fields'][string]['type']` and the corresponding renderer branch — never special-casing inside a consumer.
 
 ---
 
 ## Architecture
 
 ### Component layering
+
+The general Primitive/Field/Form layering principle is canonical in `/home/jameson/source/ai-prompts/react-next.md` §1. This repo's concrete layering contract:
 
 | Layer         | Purpose                                                  | Example                              |
 | ------------- | -------------------------------------------------------- | ------------------------------------ |
@@ -29,11 +32,11 @@ The package manager is **pnpm**. The toolchain is **TypeScript + Vite (via Story
 
 ### Path aliases
 
-`@/*` maps to `./src/*`. The `@/dynamic-form/*` alias preserves compatibility with the upstream consuming app's import paths. Do not introduce additional aliases without updating `tsconfig.json`, `vitest.config.ts`, and the Storybook Vite config in lockstep.
+The general path-alias-in-lockstep policy is canonical in `/home/jameson/source/ai-prompts/react-next.md` §7. This repo's specifics: `@/*` maps to `./src/*`. The `@/dynamic-form/*` alias preserves compatibility with the upstream consuming app's import paths. Do not introduce additional aliases without updating `tsconfig.json`, `vitest.config.ts`, and the Storybook Vite config in lockstep.
 
 ### State
 
-`DynamicForm` keeps an internal `editedState` keyed by field name, where each entry has `{ value, error }`. Validation runs on submit. The component is intentionally uncontrolled at the form level (the consumer receives the final dict via `onConfirm`). New field types must integrate with this state shape.
+The general uncontrolled-at-form-level pattern (`{ value, error }` keyed by name, consumer receives the final dict via `onConfirm`) is canonical in `/home/jameson/source/ai-prompts/react-next.md` §9. This repo's concrete shape: `DynamicForm` keeps an internal `editedState` keyed by field name, where each entry has `{ value, error }`. Validation runs on submit. The component is intentionally uncontrolled at the form level (the consumer receives the final dict via `onConfirm`). New field types must integrate with this state shape.
 
 ---
 
