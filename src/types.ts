@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * Shared field types. Kept in a dependency-free leaf module so the individual
  * field components and the `Field` composer can both import them without

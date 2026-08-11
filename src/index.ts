@@ -1,4 +1,5 @@
-// Public API surface for @jgrieve/dynamic-form.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Public API surface for @jgrieve/forms.
 //
 // Consumers should import everything from this entry point rather than
 // reaching into individual files. The depcruise `no-orphans` rule keeps

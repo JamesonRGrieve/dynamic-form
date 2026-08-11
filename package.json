@@ -1,7 +1,7 @@
 {
-  "name": "@jgrieve/dynamic-form",
-  "version": "0.0.0",
-  "description": "Components developed by Jameson R Grieve for use in React/NextJS projects.",
+  "name": "@jgrieve/forms",
+  "version": "1.0.0-alpha.1",
+  "description": "Schema-driven dynamic form generation for React.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "packageManager": "pnpm@10.33.0",
@@ -79,7 +79,7 @@
     "components"
   ],
   "author": "Jameson R Grieve",
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/JamesonRGrieve/dynamic-form/issues"
   },

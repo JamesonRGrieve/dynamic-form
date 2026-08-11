@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 type LogOptions = { client?: number; server?: number };
 
 function parseVerbosity(raw: string | undefined): number {

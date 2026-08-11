@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { type InputHTMLAttributes, forwardRef } from 'react';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';

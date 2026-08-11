@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { type ReactElement, type ReactNode, type SyntheticEvent, useCallback, useEffect, useState } from 'react';
 import timezones from 'timezones-list';
 import Field from './Field';

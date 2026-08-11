@@ -1,4 +1,4 @@
-# Claude Code Instructions — @jgrieve/dynamic-form
+# Claude Code Instructions — @jgrieve/forms
 
 This is a **React/Next.js component library** providing a `DynamicForm` and a set of related field components (`TextField`, `PasswordField`, `SelectField`, `RadioField`, `CheckField`, etc.) plus the underlying `Field` primitive. The library is consumed by other Next.js apps as a pre-built package (`dist/`) and is developed in Storybook.
 
@@ -8,9 +8,9 @@ The package manager is **pnpm**. The toolchain is **TypeScript + Vite (via Story
 
 ---
 
-## Repo-Specific Direction (in addition to `/home/jameson/source/ai-prompts/typescript.md` + `/home/jameson/source/ai-prompts/react-next.md`)
+## Repo-Specific Direction (in addition to `/home/jameson/Source/ai-prompts/typescript.md` + `/home/jameson/Source/ai-prompts/react-next.md`)
 
-The generic a11y-default-story rule (every component ships with the a11y-pass story by default) and the shared-primitives-through-one-`Field` rule are canonical in `/home/jameson/source/ai-prompts/react-next.md` §4 / §1. Repo-local specifics:
+The generic a11y-default-story rule (every component ships with the a11y-pass story by default) and the shared-primitives-through-one-`Field` rule are canonical in `/home/jameson/Source/ai-prompts/react-next.md` §4 / §1. Repo-local specifics:
 
 - **Field-shared primitives go through `Field.tsx`.** Adding a new field type means extending `DynamicFormProps['fields'][string]['type']` and the corresponding renderer branch — never special-casing inside a consumer.
 
@@ -20,7 +20,7 @@ The generic a11y-default-story rule (every component ships with the a11y-pass st
 
 ### Component layering
 
-The general Primitive/Field/Form layering principle is canonical in `/home/jameson/source/ai-prompts/react-next.md` §1. This repo's concrete layering contract:
+The general Primitive/Field/Form layering principle is canonical in `/home/jameson/Source/ai-prompts/react-next.md` §1. This repo's concrete layering contract:
 
 | Layer         | Purpose                                                  | Example                              |
 | ------------- | -------------------------------------------------------- | ------------------------------------ |
@@ -32,11 +32,11 @@ The general Primitive/Field/Form layering principle is canonical in `/home/james
 
 ### Path aliases
 
-The general path-alias-in-lockstep policy is canonical in `/home/jameson/source/ai-prompts/react-next.md` §7. This repo's specifics: `@/*` maps to `./src/*`. The `@/dynamic-form/*` alias preserves compatibility with the upstream consuming app's import paths. Do not introduce additional aliases without updating `tsconfig.json`, `vitest.config.ts`, and the Storybook Vite config in lockstep.
+The general path-alias-in-lockstep policy is canonical in `/home/jameson/Source/ai-prompts/react-next.md` §7. This repo's specifics: `@/*` maps to `./src/*`. The `@/dynamic-form/*` alias preserves compatibility with the upstream consuming app's import paths. Do not introduce additional aliases without updating `tsconfig.json`, `vitest.config.ts`, and the Storybook Vite config in lockstep.
 
 ### State
 
-The general uncontrolled-at-form-level pattern (`{ value, error }` keyed by name, consumer receives the final dict via `onConfirm`) is canonical in `/home/jameson/source/ai-prompts/react-next.md` §9. This repo's concrete shape: `DynamicForm` keeps an internal `editedState` keyed by field name, where each entry has `{ value, error }`. Validation runs on submit. The component is intentionally uncontrolled at the form level (the consumer receives the final dict via `onConfirm`). New field types must integrate with this state shape.
+The general uncontrolled-at-form-level pattern (`{ value, error }` keyed by name, consumer receives the final dict via `onConfirm`) is canonical in `/home/jameson/Source/ai-prompts/react-next.md` §9. This repo's concrete shape: `DynamicForm` keeps an internal `editedState` keyed by field name, where each entry has `{ value, error }`. Validation runs on submit. The component is intentionally uncontrolled at the form level (the consumer receives the final dict via `onConfirm`). New field types must integrate with this state shape.
 
 ---
 
@@ -74,7 +74,7 @@ pnpm symmetry:ratchet[:update]
 
 | Key       | Value                                               |
 | --------- | --------------------------------------------------- |
-| Package   | `@jgrieve/dynamic-form`                             |
+| Package   | `@jgrieve/forms`                             |
 | Manager   | pnpm                                                |
 | Language  | TypeScript                                          |
 | Framework | React 18 + Next.js 15 (peer)                        |
