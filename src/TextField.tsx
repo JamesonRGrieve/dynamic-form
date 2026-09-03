@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { type InputHTMLAttributes, forwardRef } from 'react';
+import type { ComponentProps, JSX } from 'react';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import type { FieldChangeEvent } from './types';
 
-export interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+export interface TextFieldProps extends Omit<ComponentProps<'input'>, 'onChange'> {
   id: string;
   value?: string | undefined;
   onChange?: ((event: FieldChangeEvent) => void) | undefined;
@@ -18,12 +18,23 @@ export interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElemen
   error?: string | boolean | undefined;
 }
 
-const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextField(
-  { id, value, onChange, helperText, label, placeholder, name, autoComplete, className, type = 'text', error, ...props },
+function TextField({
+  id,
+  value,
+  onChange,
+  helperText,
+  label,
+  placeholder,
+  name,
+  autoComplete,
+  className,
+  type = 'text',
+  error,
   ref,
-) {
+  ...props
+}: TextFieldProps): JSX.Element {
   return (
-    <div className='flex flex-col w-full gap-2 mb-4'>
+    <div data-slot='text-field' className='flex flex-col w-full gap-2 mb-4'>
       <Label htmlFor={id}>{label}</Label>
       <Input
         {...props}
@@ -36,6 +47,6 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function TextFiel
       )}
     </div>
   );
-});
+}
 
 export default TextField;

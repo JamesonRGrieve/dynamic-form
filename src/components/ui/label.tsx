@@ -2,16 +2,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 import * as LabelPrimitive from '@radix-ui/react-label';
-import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+import { type VariantProps, cva } from 'class-variance-authority';
+import type { ComponentProps, JSX } from 'react';
 import { cn } from '../../lib/utils';
 
 const labelVariants = cva('text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70');
 
-const Label = React.forwardRef<
-  React.ComponentRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & VariantProps<typeof labelVariants>
->(({ className, ...props }, ref) => <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />);
-Label.displayName = LabelPrimitive.Root.displayName;
+export type LabelProps = ComponentProps<typeof LabelPrimitive.Root> & VariantProps<typeof labelVariants>;
 
-export { Label };
+export function Label({ className, ...props }: LabelProps): JSX.Element {
+  return <LabelPrimitive.Root data-slot='label' className={cn(labelVariants(), className)} {...props} />;
+}

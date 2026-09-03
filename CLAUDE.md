@@ -15,11 +15,11 @@ Read **before your first edit**:
 
 Three-layer component model:
 
-| Layer | Purpose | Files |
-|-------|---------|-------|
-| **Primitive** | Single input, no business logic | `TextField`, `PasswordField`, `SelectField`, `RadioField`, `CheckField` |
-| **Field** | Label + error + layout wrapper, dispatches to Primitive by `type` | `Field.tsx` |
-| **Form** | Schema-driven composition | `DynamicForm.tsx` |
+| Layer         | Purpose                                                           | Files                                                                   |
+| ------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Primitive** | Single input, no business logic                                   | `TextField`, `PasswordField`, `SelectField`, `RadioField`, `CheckField` |
+| **Field**     | Label + error + layout wrapper, dispatches to Primitive by `type` | `Field.tsx`                                                             |
+| **Form**      | Schema-driven composition                                         | `DynamicForm.tsx`                                                       |
 
 Adding a new field type: extend `DynamicFormProps['fields'][string]['type']` and the renderer branch in `Field.tsx`.
 
