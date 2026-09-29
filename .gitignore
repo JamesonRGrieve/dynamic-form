@@ -656,7 +656,11 @@ test.ipynb
 *storybook.log
 
 # Ratchet coverage artifacts (regenerated on every run; baselines are checked in)
+.animation-coverage.json
+.important-coverage.json
+.js-coverage.json
 .symmetry-coverage.json
+.theme-coverage.json
 
 # Playwright
 /test-results/
