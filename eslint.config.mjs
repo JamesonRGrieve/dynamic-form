@@ -1,18 +1,25 @@
+import eslintComments from '@eslint-community/eslint-plugin-eslint-comments';
+import { fixupPluginRules } from '@eslint/compat';
 import js from '@eslint/js';
 import vitest from '@vitest/eslint-plugin';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import eslintComments from 'eslint-plugin-eslint-comments';
-import importPlugin from 'eslint-plugin-import';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
+import importPluginLegacy from 'eslint-plugin-import';
+import jsxA11yLegacy from 'eslint-plugin-jsx-a11y';
 import promise from 'eslint-plugin-promise';
-import reactPlugin from 'eslint-plugin-react';
+import reactPluginLegacy from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import storybook from 'eslint-plugin-storybook';
 import unusedImports from 'eslint-plugin-unused-imports';
 import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import globals from 'globals';
+
+// These plugins have no ESLint 10 release yet; the official compat shim restores the
+// context APIs (getFilename, getScope, ...) their rules still call.
+const reactPlugin = fixupPluginRules(reactPluginLegacy);
+const jsxA11y = fixupPluginRules(jsxA11yLegacy);
+const importPlugin = fixupPluginRules(importPluginLegacy);
 
 const tsRules = {
   ...js.configs.recommended.rules,
