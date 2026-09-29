@@ -76,6 +76,8 @@ export default function DynamicForm({
   const readOnlyFields = readOnlyFieldsProp ?? EMPTY_STRINGS;
   const additionalButtons = additionalButtonsProp ?? EMPTY_NODES;
 
+  const specs = useMemo(() => new Map<string, DynamicFormFieldSpec>(Object.entries(fields ?? {})), [fields]);
+
   const buildInitialState = useCallback((): EditedState => {
     const initialState: EditedState = {};
     Object.keys(fields ?? toUpdate ?? {}).forEach((key) => {
@@ -84,11 +86,7 @@ export default function DynamicForm({
       }
       let initial: DynamicFormFieldValueTypes;
       if (fields !== undefined) {
-        const spec = fields[key];
-        // The default tsconfig's index signature claims spec is always defined
-        // (so ESLint flags the undefined check); tsconfig.strict.json's
-        // noUncheckedIndexedAccess disagrees. Guard for both.
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const spec = specs.get(key);
         initial = spec === undefined ? '' : (spec.value ?? typeDefaults[spec.type]);
       } else {
         initial = toUpdate?.[key] ?? '';
@@ -96,7 +94,7 @@ export default function DynamicForm({
       initialState[key] = { value: initial, error: '' };
     });
     return initialState;
-  }, [fields, toUpdate, excludeFields, readOnlyFields]);
+  }, [fields, specs, toUpdate, excludeFields, readOnlyFields]);
 
   const [editedState, setEditedState] = useState<EditedState>(buildInitialState);
   const chosenTimezones = Object.entries(editedState)
@@ -105,20 +103,23 @@ export default function DynamicForm({
     .join(',');
   const timezones = useMemo(() => timezoneOptions(new Date(), chosenTimezones.split(',')), [chosenTimezones]);
 
-  const handleChange = useCallback((event: FieldChangeEvent, id: string) => {
-    setEditedState((prevState) => ({
-      ...prevState,
-      [id]: { ...getEntry(prevState, id), value: event.target.value },
-    }));
-  }, []);
+  // Boolean fields keep a boolean; their checkbox reports "true"/"false".
+  const handleChange = useCallback(
+    (event: FieldChangeEvent, id: string) => {
+      const value = specs.get(id)?.type === 'boolean' ? event.target.value === 'true' : event.target.value;
+      setEditedState((prevState) => ({
+        ...prevState,
+        [id]: { ...getEntry(prevState, id), value },
+      }));
+    },
+    [specs],
+  );
 
   const fieldError = useCallback(
     (key: string, value: DynamicFormFieldValueTypes): string => {
       try {
         if (fields !== undefined) {
-          const spec: DynamicFormFieldSpec | undefined = fields[key];
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- noUncheckedIndexedAccess sees spec as possibly undefined
-          const validation = spec?.validation;
+          const validation = specs.get(key)?.validation;
           return validation === undefined || validation(value) ? '' : INVALID_VALUE;
         }
         return typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(value)) ? EXPECTED_NUMBER : '';
@@ -126,7 +127,7 @@ export default function DynamicForm({
         return error instanceof Error ? error.message : String(error);
       }
     },
-    [fields, toUpdate],
+    [fields, specs, toUpdate],
   );
 
   // Validate against the values being submitted, not the last render's errors,
@@ -157,11 +158,11 @@ export default function DynamicForm({
   }, [buildInitialState]);
 
   function fieldDisplay(fieldName: string): string {
-    return fields?.[fieldName]?.display ?? toTitleCase(fieldName);
+    return specs.get(fieldName)?.display ?? toTitleCase(fieldName);
   }
 
   function fieldKind(fieldName: string): 'checkbox' | 'password' | 'text' {
-    const t = fields?.[fieldName]?.type;
+    const t = specs.get(fieldName)?.type;
     if (t === 'boolean') {
       return 'checkbox';
     }

@@ -98,6 +98,22 @@ describe('DynamicForm', () => {
     expect(screen.queryByText('Invalid value, please double check your input.')).not.toBeInTheDocument();
   });
 
+  it('toggles a boolean field both ways and submits it as a boolean', async () => {
+    const onConfirm = vi.fn();
+    const user = userEvent.setup();
+    render(<DynamicForm fields={{ enabled: { type: 'boolean', display: 'Enabled', value: true } }} onConfirm={onConfirm} />);
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toBeChecked();
+    await user.click(checkbox);
+    expect(checkbox).not.toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onConfirm).toHaveBeenLastCalledWith({ enabled: false });
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onConfirm).toHaveBeenLastCalledWith({ enabled: true });
+  });
+
   it('renders a timezone field as a labelled picker showing the current zone', () => {
     render(<DynamicForm fields={{ timezone: { type: 'text', value: 'Asia/Kolkata' } }} onConfirm={() => undefined} />);
     expect(screen.getByLabelText('Timezone')).toHaveTextContent('Asia/Kolkata');

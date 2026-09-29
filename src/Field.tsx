@@ -64,7 +64,16 @@ const FieldInput: React.FC<FieldProps> = ({
     case 'select':
       return <SelectField {...commonProps} value={value ?? ''} items={items ?? []} />;
     case 'checkbox':
-      return <CheckField {...commonProps} value={['on', 'true'].includes(value?.toLowerCase() ?? '')} />;
+      // A checkbox's DOM value is always "on"; report whether it is ticked instead.
+      return (
+        <CheckField
+          {...commonProps}
+          value={['on', 'true'].includes(value?.toLowerCase() ?? '')}
+          onChange={(event) => {
+            injectedOnChange({ target: { name: nameID, value: String(event.target.checked) } });
+          }}
+        />
+      );
     case 'radio':
       return <RadioField {...commonProps} value={value ?? ''} items={items ?? []} />;
     case 'time':
