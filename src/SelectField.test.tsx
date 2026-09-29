@@ -34,4 +34,9 @@ describe('SelectField', () => {
     render(<SelectField id='s' name='s' label='Color' items={['Red', 'Green']} value='Green' onChange={() => undefined} />);
     expect(screen.getByText('Green')).toBeInTheDocument();
   });
+
+  it('associates its label with the picker', () => {
+    render(<SelectField id='s' name='s' label='Color' items={['Red', 'Green']} value='Red' onChange={() => undefined} />);
+    expect(screen.getByLabelText('Color')).toHaveAttribute('role', 'combobox');
+  });
 });

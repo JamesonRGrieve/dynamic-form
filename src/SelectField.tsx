@@ -48,7 +48,7 @@ export default function SelectField({
     <div className='flex flex-col w-full gap-2 mb-4'>
       <Label htmlFor={id}>{label}</Label>
       <Select onValueChange={handleValueChange} value={value}>
-        <SelectTrigger className='w-full'>
+        <SelectTrigger id={id} className='w-full'>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
