@@ -75,4 +75,37 @@ describe('DynamicForm', () => {
     await user.click(screen.getByRole('button', { name: 'Submit' }));
     expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({ name: 'Ada' }));
   });
+
+  it('blocks the first submit of an invalid value and shows why', async () => {
+    const onConfirm = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <DynamicForm
+        fields={{
+          name: { type: 'text', display: 'Name', value: '', validation: (value) => value !== '' },
+          nickname: { type: 'text', display: 'Nickname', value: 'Ace' },
+        }}
+        onConfirm={onConfirm}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.getByText('Invalid value, please double check your input.')).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Name'), 'Ada');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onConfirm).toHaveBeenCalledWith({ name: 'Ada', nickname: 'Ace' });
+    expect(screen.queryByText('Invalid value, please double check your input.')).not.toBeInTheDocument();
+  });
+
+  it('rejects a non-numeric value for a numeric toUpdate field', async () => {
+    const onConfirm = vi.fn();
+    const user = userEvent.setup();
+    render(<DynamicForm toUpdate={{ age: 3 }} onConfirm={onConfirm} />);
+    await user.clear(screen.getByLabelText('Age'));
+    await user.type(screen.getByLabelText('Age'), 'three');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.getByText('Expected a number for this input.')).toBeInTheDocument();
+  });
 });

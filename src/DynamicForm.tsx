@@ -10,6 +10,8 @@ import type { FieldChangeEvent } from './types';
 
 const EMPTY_STRINGS: readonly string[] = Object.freeze([]);
 const EMPTY_NODES: readonly ReactNode[] = Object.freeze([]);
+const INVALID_VALUE = 'Invalid value, please double check your input.';
+const EXPECTED_NUMBER = 'Expected a number for this input.';
 
 export function toTitleCase(input: string): string {
   // Replace underscores, or capital letters (in the middle of the string) with a space and the same character.
@@ -103,42 +105,37 @@ export default function DynamicForm({
     }));
   }, []);
 
-  const handleSubmit = useCallback(
-    (e: SyntheticEvent) => {
-      Object.keys(fields ?? toUpdate ?? {}).forEach((key: string) => {
-        try {
-          if (fields !== undefined) {
-            const spec: DynamicFormFieldSpec | undefined = fields[key];
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- noUncheckedIndexedAccess sees spec as possibly undefined
-            const valid = spec?.validation?.(getEntry(editedState, key).value) === true;
-            if (valid) {
-              setEditedState((prevState) => ({ ...prevState, [key]: { ...getEntry(prevState, key), error: '' } }));
-            } else {
-              setEditedState((prevState) => ({
-                ...prevState,
-                [key]: { ...getEntry(prevState, key), error: 'Invalid value, please double check your input.' },
-              }));
-            }
-          } else if (typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(getEntry(editedState, key).value))) {
-            setEditedState((prevState) => ({
-              ...prevState,
-              [key]: { ...getEntry(prevState, key), error: 'Expected a number for this input.' },
-            }));
-          } else {
-            setEditedState((prevState) => ({ ...prevState, [key]: { ...getEntry(prevState, key), error: '' } }));
-          }
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          setEditedState((prevState) => ({ ...prevState, [key]: { ...getEntry(prevState, key), error: message } }));
+  const fieldError = useCallback(
+    (key: string, value: DynamicFormFieldValueTypes): string => {
+      try {
+        if (fields !== undefined) {
+          const spec: DynamicFormFieldSpec | undefined = fields[key];
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- noUncheckedIndexedAccess sees spec as possibly undefined
+          const validation = spec?.validation;
+          return validation === undefined || validation(value) ? '' : INVALID_VALUE;
         }
-        e.preventDefault();
-      });
-      if (Object.values(editedState).every((field) => field.error === '')) {
-        const formattedForReturn = Object.fromEntries(Object.entries(editedState).map(([key, value]) => [key, value.value]));
-        onConfirm(formattedForReturn);
+        return typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(value)) ? EXPECTED_NUMBER : '';
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
       }
     },
-    [editedState, fields, toUpdate, onConfirm],
+    [fields, toUpdate],
+  );
+
+  // Validate against the values being submitted, not the last render's errors,
+  // so an invalid value can never slip through on the first click.
+  const handleSubmit = useCallback(
+    (e: SyntheticEvent) => {
+      e.preventDefault();
+      const validated: EditedState = Object.fromEntries(
+        Object.entries(editedState).map(([key, entry]) => [key, { ...entry, error: fieldError(key, entry.value) }]),
+      );
+      setEditedState(validated);
+      if (Object.values(validated).every((entry) => entry.error === '')) {
+        onConfirm(Object.fromEntries(Object.entries(validated).map(([key, entry]) => [key, entry.value])));
+      }
+    },
+    [editedState, fieldError, onConfirm],
   );
 
   // Re-seed state when the incoming props change. The lazy initialiser
