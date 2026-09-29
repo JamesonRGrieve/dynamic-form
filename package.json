@@ -61,10 +61,11 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:storybook": "sh ./scripts/run-storybook-playwright-tests.sh",
-    "compile": "rm -rf dist tsconfig.compile.tsbuildinfo && tsc -p tsconfig.compile.json",
+    "compile": "rm -rf dist tsconfig.compile.tsbuildinfo && tsc -p tsconfig.compile.json && tsc-alias -p tsconfig.compile.json --resolve-full-paths",
+    "verify:dist": "node scripts/verify-dist.mjs",
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
     "prepack": "pnpm compile",
-    "precommit": "pnpm compile && pnpm check",
+    "precommit": "pnpm compile && pnpm verify:dist && pnpm check",
     "dev": "pnpm storybook",
     "storybook": "storybook dev -p 6006",
     "storybook-build": "storybook build",
@@ -167,13 +168,11 @@
     "stylelint-order": "^8.1.1",
     "tailwindcss": "^4.3.3",
     "tailwindcss-animate": "^1.0.7",
+    "tsc-alias": "^1.9.5",
     "type-coverage": "^2.30.2",
     "typescript": "^6.0.3",
     "vite": "^8.3.1",
     "vitest": "^5.0.2"
-  },
-  "pnpm": {
-    "overrides": {}
   },
   "peerDependencies": {
     "react": "^19.0.0",
