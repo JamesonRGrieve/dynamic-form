@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { type ReactElement, type ReactNode, type SyntheticEvent, useCallback, useEffect, useState } from 'react';
-import timezones from 'timezones-list';
+import { type ReactElement, type ReactNode, type SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import Field from './Field';
 import TextField from './TextField';
 import { Button } from './components/ui/button';
 import { Separator } from './components/ui/separator';
 import log from './lib/log';
+import { timezoneOptions } from './lib/timezones';
 import type { FieldChangeEvent } from './types';
 
 const EMPTY_STRINGS: readonly string[] = Object.freeze([]);
 const EMPTY_NODES: readonly ReactNode[] = Object.freeze([]);
 const INVALID_VALUE = 'Invalid value, please double check your input.';
 const EXPECTED_NUMBER = 'Expected a number for this input.';
+/** Field names rendered as a timezone picker. */
+const TIMEZONE_FIELDS: readonly string[] = ['tz', 'timezone'];
 
 export function toTitleCase(input: string): string {
   // Replace underscores, or capital letters (in the middle of the string) with a space and the same character.
@@ -97,6 +99,11 @@ export default function DynamicForm({
   }, [fields, toUpdate, excludeFields, readOnlyFields]);
 
   const [editedState, setEditedState] = useState<EditedState>(buildInitialState);
+  const chosenTimezones = Object.entries(editedState)
+    .filter(([fieldName]) => TIMEZONE_FIELDS.includes(fieldName))
+    .map(([, entry]) => entry.value.toString())
+    .join(',');
+  const timezones = useMemo(() => timezoneOptions(new Date(), chosenTimezones.split(',')), [chosenTimezones]);
 
   const handleChange = useCallback((event: FieldChangeEvent, id: string) => {
     setEditedState((prevState) => ({
@@ -168,7 +175,7 @@ export default function DynamicForm({
     <form className='grid grid-cols-4 gap-4'>
       {Object.entries(editedState).map(([fieldName, fieldObject]) => (
         <div key={fieldName.toLowerCase().replaceAll(' ', '-')} className='col-span-2'>
-          {['tz', 'timezone'].includes(fieldName) ? (
+          {TIMEZONE_FIELDS.includes(fieldName) ? (
             <Field
               nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
               label={fieldDisplay(fieldName)}
@@ -176,14 +183,7 @@ export default function DynamicForm({
               onChange={handleChange}
               messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
               type='select'
-              items={timezones
-                .sort((a, b) => {
-                  if (a.utc !== b.utc) {
-                    return a.utc > b.utc ? 1 : -1;
-                  }
-                  return a.tzCode > b.tzCode ? 1 : -1;
-                })
-                .map((tz) => ({ value: tz.tzCode, label: tz.label }))}
+              items={timezones}
             />
           ) : (
             <Field

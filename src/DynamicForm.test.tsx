@@ -98,6 +98,11 @@ describe('DynamicForm', () => {
     expect(screen.queryByText('Invalid value, please double check your input.')).not.toBeInTheDocument();
   });
 
+  it('renders a timezone field as a labelled picker showing the current zone', () => {
+    render(<DynamicForm fields={{ timezone: { type: 'text', value: 'Asia/Kolkata' } }} onConfirm={() => undefined} />);
+    expect(screen.getByLabelText('Timezone')).toHaveTextContent('Asia/Kolkata');
+  });
+
   it('rejects a non-numeric value for a numeric toUpdate field', async () => {
     const onConfirm = vi.fn();
     const user = userEvent.setup();
