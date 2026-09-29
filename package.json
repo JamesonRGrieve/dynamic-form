@@ -1,9 +1,11 @@
 {
   "name": "@jgrieve/forms",
-  "version": "1.0.0-alpha.1",
+  "version": "0.0.1-alpha.1",
   "description": "Schema-driven dynamic form generation for React.",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "lint": "eslint .",
@@ -59,8 +61,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:storybook": "sh ./scripts/run-storybook-playwright-tests.sh",
-    "compile": "tsc -p tsconfig.compile.json",
+    "compile": "rm -rf dist tsconfig.compile.tsbuildinfo && tsc -p tsconfig.compile.json",
     "prepare": "git config core.hooksPath .githooks 2>/dev/null || true",
+    "prepack": "pnpm compile",
     "precommit": "pnpm compile && pnpm check",
     "dev": "pnpm storybook",
     "storybook": "storybook dev -p 6006",
@@ -87,15 +90,11 @@
   "files": [
     "dist"
   ],
-  "_moduleAliases": {
-    "@": "."
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./tailwind.config.js": "./dist/tailwind.config.js",
     "./*": {
       "types": "./dist/*.d.ts",
       "default": "./dist/*.js"
@@ -108,13 +107,10 @@
     "@radix-ui/react-separator": "^1.1.15",
     "@radix-ui/react-slot": "^1.3.3",
     "@radix-ui/react-toast": "^1.2.23",
-    "autoprefixer": "^10.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "next": "^16.3.7",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
     "react-icons": "^5.7.0",
+    "tailwind-merge": "^3.7.0",
     "timezones-list": "^3.1.0"
   },
   "devDependencies": {
@@ -142,6 +138,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^5.0.2",
     "@vitest/eslint-plugin": "^1.6.27",
+    "autoprefixer": "^10.6.1",
     "dependency-cruiser": "^18.4.0",
     "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
@@ -157,15 +154,17 @@
     "globals": "^17.12.0",
     "happy-dom": "^20.14.5",
     "knip": "^6.38.0",
+    "next": "^16.3.7",
     "playwright": "^1.63.0",
     "postcss": "^8.5.28",
     "prettier": "^3.9.9",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "size-limit": "^14.1.0",
     "storybook": "^10.6.0",
     "stylelint": "^17.15.0",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-order": "^8.1.1",
-    "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.3",
     "tailwindcss-animate": "^1.0.7",
     "type-coverage": "^2.30.2",
@@ -175,5 +174,9 @@
   },
   "pnpm": {
     "overrides": {}
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
