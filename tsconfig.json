@@ -33,6 +33,6 @@
       "@/dynamic-form/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/vitest-jest-dom.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

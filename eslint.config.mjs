@@ -28,9 +28,8 @@ const tsRules = {
   ...reactHooks.configs.recommended.rules,
   ...jsxA11y.configs.recommended.rules,
 
-  // eslint-plugin-eslint-comments@3.x predates flat config and exposes no
-  // usable `.configs.recommended.rules` for ESLint v9 — wire its rules
-  // manually per workspace CLAUDE.md §7.5 fallback.
+  // eslint-comments is registered under its historical key so existing rule ids
+  // and inline directives keep working; its rules are wired individually.
   'eslint-comments/no-unused-disable': 'warn',
   // eslint-plugin-promise recommended subset (manual wire — see above).
   'promise/catch-or-return': 'warn',
@@ -40,6 +39,8 @@ const tsRules = {
 
   '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
   '@typescript-eslint/no-explicit-any': 'warn',
+  // Module augmentation merges members into another interface via a single `extends`.
+  '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
   '@typescript-eslint/consistent-type-imports': ['warn', { prefer: 'type-imports' }],
   '@typescript-eslint/consistent-type-exports': ['warn', { fixMixedExportsWithInlineTypeSpecifier: true }],
   '@typescript-eslint/no-import-type-side-effects': 'warn',
@@ -324,14 +325,14 @@ export default [
     ],
   },
   {
-    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'tests/**/*.ts', 'tests/**/*.tsx'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
         ecmaFeatures: { jsx: true },
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './tsconfig.test.json'],
       },
       globals: {
         ...globals.browser,
