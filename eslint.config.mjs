@@ -312,6 +312,8 @@ export default [
   {
     ignores: [
       'dist/',
+      'dist.next/',
+      'dist.old/',
       'node_modules/',
       'storybook-static/',
       '.next/',
