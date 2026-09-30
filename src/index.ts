@@ -6,7 +6,7 @@
 // new modules connected to this graph.
 
 export { default as DynamicForm } from './DynamicForm';
-export type { DynamicFormProps, DynamicFormFieldValueTypes } from './DynamicForm';
+export type { DynamicFormProps, DynamicFormFieldValueTypes, DynamicFormErrorMessages } from './DynamicForm';
 export { toTitleCase } from './DynamicForm';
 
 export { default as Field } from './Field';

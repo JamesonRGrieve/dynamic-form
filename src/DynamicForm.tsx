@@ -4,14 +4,26 @@ import Field from './Field';
 import TextField from './TextField';
 import { Button } from './components/ui/button';
 import { Separator } from './components/ui/separator';
+import { toHtmlId } from './lib/htmlId';
 import log from './lib/log';
 import { timezoneOptions } from './lib/timezones';
 import type { FieldChangeEvent } from './types';
 
 const EMPTY_STRINGS: readonly string[] = Object.freeze([]);
 const EMPTY_NODES: readonly ReactNode[] = Object.freeze([]);
-const INVALID_VALUE = 'Invalid value, please double check your input.';
-const EXPECTED_NUMBER = 'Expected a number for this input.';
+
+/** The validation messages the form shows; each can be replaced, e.g. for translation. */
+export type DynamicFormErrorMessages = {
+  /** A field's `validation` rejected its value. */
+  invalidValue: string;
+  /** A field seeded with a number (via `toUpdate`) holds something that is not one. */
+  expectedNumber: string;
+};
+
+const DEFAULT_ERROR_MESSAGES: DynamicFormErrorMessages = {
+  invalidValue: 'Invalid value, please double check your input.',
+  expectedNumber: 'Expected a number for this input.',
+};
 /** Field names rendered as a timezone picker. */
 const TIMEZONE_FIELDS: readonly string[] = ['tz', 'timezone'];
 
@@ -46,7 +58,13 @@ export type DynamicFormProps = {
   readOnlyFields?: string[];
   toUpdate?: Record<string, DynamicFormFieldValueTypes>;
   additionalButtons?: ReactNode[];
-  onConfirm: (data: { [key: string]: DynamicFormFieldValueTypes }) => void;
+  /** Names the editable fields as a group. */
+  legend?: string;
+  /** Names the read-only fields as a group. */
+  readOnlyLegend?: string;
+  errorMessages?: Partial<DynamicFormErrorMessages>;
+  /** Returning a promise disables the form until it settles. */
+  onConfirm: (data: { [key: string]: DynamicFormFieldValueTypes }) => void | Promise<void>;
 };
 
 type FieldEntry = { value: DynamicFormFieldValueTypes; error: string };
@@ -66,6 +84,9 @@ export default function DynamicForm({
   onConfirm,
   submitButtonText = 'Submit',
   additionalButtons: additionalButtonsProp,
+  legend,
+  readOnlyLegend,
+  errorMessages,
 }: DynamicFormProps): ReactElement {
   if (fields === undefined && toUpdate === undefined) {
     throw new Error('Either fields or toUpdate must be provided to DynamicForm.');
@@ -75,6 +96,9 @@ export default function DynamicForm({
   const excludeFields = excludeFieldsProp ?? EMPTY_STRINGS;
   const readOnlyFields = readOnlyFieldsProp ?? EMPTY_STRINGS;
   const additionalButtons = additionalButtonsProp ?? EMPTY_NODES;
+  const invalidValue = errorMessages?.invalidValue ?? DEFAULT_ERROR_MESSAGES.invalidValue;
+  const expectedNumber = errorMessages?.expectedNumber ?? DEFAULT_ERROR_MESSAGES.expectedNumber;
+  const [submitting, setSubmitting] = useState(false);
 
   const specs = useMemo(() => new Map<string, DynamicFormFieldSpec>(Object.entries(fields ?? {})), [fields]);
 
@@ -120,14 +144,14 @@ export default function DynamicForm({
       try {
         if (fields !== undefined) {
           const validation = specs.get(key)?.validation;
-          return validation === undefined || validation(value) ? '' : INVALID_VALUE;
+          return validation === undefined || validation(value) ? '' : invalidValue;
         }
-        return typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(value)) ? EXPECTED_NUMBER : '';
+        return typeof toUpdate?.[key] === 'number' && Number.isNaN(Number(value)) ? expectedNumber : '';
       } catch (error) {
         return error instanceof Error ? error.message : String(error);
       }
     },
-    [fields, specs, toUpdate],
+    [fields, specs, toUpdate, invalidValue, expectedNumber],
   );
 
   // Validate against the values being submitted, not the last render's errors,
@@ -139,8 +163,16 @@ export default function DynamicForm({
         Object.entries(editedState).map(([key, entry]) => [key, { ...entry, error: fieldError(key, entry.value) }]),
       );
       setEditedState(validated);
-      if (Object.values(validated).every((entry) => entry.error === '')) {
-        onConfirm(Object.fromEntries(Object.entries(validated).map(([key, entry]) => [key, entry.value])));
+      if (!Object.values(validated).every((entry) => entry.error === '')) {
+        return;
+      }
+      const result = onConfirm(Object.fromEntries(Object.entries(validated).map(([key, entry]) => [key, entry.value])));
+      if (result instanceof Promise) {
+        setSubmitting(true);
+        // A rejection is the caller's to handle; it still propagates.
+        void result.finally(() => {
+          setSubmitting(false);
+        });
       }
     },
     [editedState, fieldError, onConfirm],
@@ -161,7 +193,10 @@ export default function DynamicForm({
     return specs.get(fieldName)?.display ?? toTitleCase(fieldName);
   }
 
-  function fieldKind(fieldName: string): 'checkbox' | 'password' | 'text' {
+  function fieldKind(fieldName: string): 'checkbox' | 'password' | 'select' | 'text' {
+    if (TIMEZONE_FIELDS.includes(fieldName)) {
+      return 'select';
+    }
     const t = specs.get(fieldName)?.type;
     if (t === 'boolean') {
       return 'checkbox';
@@ -173,58 +208,59 @@ export default function DynamicForm({
   }
 
   return (
-    <form className='grid grid-cols-4 gap-4'>
-      {Object.entries(editedState).map(([fieldName, fieldObject]) => (
-        <div key={fieldName.toLowerCase().replaceAll(' ', '-')} className='col-span-2'>
-          {TIMEZONE_FIELDS.includes(fieldName) ? (
-            <Field
-              nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
-              label={fieldDisplay(fieldName)}
-              value={fieldObject.value.toString()}
-              onChange={handleChange}
-              messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
-              type='select'
-              items={timezones}
-            />
-          ) : (
-            <Field
-              nameID={fieldName.toLowerCase().replaceAll(' ', '-')}
-              label={fieldDisplay(fieldName)}
-              value={fieldObject.value.toString()}
-              onChange={handleChange}
-              messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
-              type={fieldKind(fieldName)}
-            />
-          )}
-        </div>
-      ))}
-      <Button
-        className={`col-span-2 ${readOnlyFields.length > 0 && additionalButtons.length > 0 ? 'col-span-2' : ''}`}
-        onClick={handleSubmit}
-      >
-        {submitButtonText}
-      </Button>
-      {readOnlyFields.length > 0 && <Separator className='col-span-4' />}
-      {readOnlyFields.map((fieldName) => {
-        const value = toUpdate?.[fieldName];
-        if (value === undefined) {
-          return null;
-        }
-        return (
-          <div className='col-span-2' key={fieldName.toLowerCase().replaceAll(' ', '-')}>
-            <div className='w-full my-4'>
-              <TextField
-                onChange={() => undefined}
-                id={fieldName.toLowerCase().replaceAll(' ', '-')}
-                name={fieldName.toLowerCase().replaceAll(' ', '-')}
+    <form className='grid grid-cols-4 gap-4' aria-busy={submitting}>
+      {/* display:contents keeps the fields on the form's grid while grouping them. */}
+      <fieldset className='contents' disabled={submitting}>
+        {legend !== undefined && <legend className='col-span-4 text-lg font-medium'>{legend}</legend>}
+        {Object.entries(editedState).map(([fieldName, fieldObject]) => {
+          const kind = fieldKind(fieldName);
+          return (
+            <div key={fieldName} className='col-span-2'>
+              <Field
+                nameID={toHtmlId(fieldName)}
                 label={fieldDisplay(fieldName)}
-                value={value.toString()}
-                disabled
+                value={fieldObject.value.toString()}
+                onChange={(event) => {
+                  handleChange(event, fieldName);
+                }}
+                messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
+                type={kind}
+                {...(kind === 'select' ? { items: timezones } : {})}
               />
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+        <Button className='col-span-2' onClick={handleSubmit} disabled={submitting}>
+          {submitButtonText}
+        </Button>
+      </fieldset>
+      {readOnlyFields.length > 0 && <Separator className='col-span-4' />}
+      {readOnlyFields.length > 0 && (
+        // Not disabled as a group: each read-only input is disabled itself.
+        <fieldset className='contents'>
+          {readOnlyLegend !== undefined && <legend className='col-span-4 text-lg font-medium'>{readOnlyLegend}</legend>}
+          {readOnlyFields.map((fieldName) => {
+            const value = toUpdate?.[fieldName];
+            if (value === undefined) {
+              return null;
+            }
+            return (
+              <div className='col-span-2' key={fieldName}>
+                <div className='w-full my-4'>
+                  <TextField
+                    onChange={() => undefined}
+                    id={toHtmlId(fieldName)}
+                    name={toHtmlId(fieldName)}
+                    label={fieldDisplay(fieldName)}
+                    value={value.toString()}
+                    disabled
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </fieldset>
+      )}
 
       {additionalButtons}
     </form>
