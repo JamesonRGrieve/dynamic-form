@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Count animation usage across src/**/*.{css,scss,module.css} plus
 // Tailwind config animation extensions.
 //

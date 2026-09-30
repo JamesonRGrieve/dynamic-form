@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * Strict-mode ratchet. Compiles the project with a strict-er tsconfig
  * (tsconfig.strict.json — auto-created if missing, enabling the "next-tier"

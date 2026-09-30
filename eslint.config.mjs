@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import eslintComments from '@eslint-community/eslint-plugin-eslint-comments';
 import { fixupPluginRules } from '@eslint/compat';
 import js from '@eslint/js';

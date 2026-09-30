@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * Test-typecheck ratchet. Runs `tsc --noEmit -p tsconfig.test.json` and counts
  * the number of unique source files producing errors. The count cannot rise.

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * type-coverage ratchet. Runs `type-coverage --strict --no-detail` and parses
  * "covered / total percent%". The "covered" count may NEVER drop. When

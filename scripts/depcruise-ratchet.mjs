@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * dependency-cruiser ratchet. Runs depcruise against `src/` and tallies
  * violation counts per rule name. Per-rule counts cannot rise; rules whose

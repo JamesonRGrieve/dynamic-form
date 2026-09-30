@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * Stylelint warning count ratchet. Runs stylelint over CSS/SCSS sources and
  * counts total warnings (severity = warning). Count cannot rise.

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 /**
  * Ratchet for `!important` usage in CSS and inline style attributes under
  * src/**. Each occurrence is cascade debt. Count cannot rise.

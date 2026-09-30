@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Animation ratchet: pins the total animation surface (CSS @keyframes,
 // `animation*:` declarations, and Tailwind config animation entries).
 //

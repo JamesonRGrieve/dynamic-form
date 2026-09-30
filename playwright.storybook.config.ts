@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import { defineConfig, devices } from '@playwright/test';
 
 const port = Number(process.env['STORYBOOK_TEST_PORT'] ?? 6007);
