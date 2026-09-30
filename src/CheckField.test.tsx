@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import CheckField from './CheckField';
@@ -42,6 +42,25 @@ describe('CheckField', () => {
         />,
       );
       expect(screen.getAllByRole('checkbox')).toHaveLength(3);
+    });
+
+    it('groups the boxes under its label and marks each invalid for an error', () => {
+      render(
+        <CheckField
+          id='c'
+          name='c'
+          label='Fruit'
+          items={['Apples', 'Bananas']}
+          value={[]}
+          aria-invalid
+          onChange={() => undefined}
+        />,
+      );
+      const group = screen.getByRole('group', { name: 'Fruit' });
+      const invalid = within(group)
+        .getAllByRole('checkbox')
+        .map((box) => box.getAttribute('aria-invalid'));
+      expect(invalid).toEqual(['true', 'true']);
     });
 
     it('marks members of `value` as checked', () => {

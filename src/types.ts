@@ -21,3 +21,9 @@ export interface FieldChangeEvent<TValue extends string | string[] = string> {
 }
 
 export type FieldChangeHandler = (event: FieldChangeEvent, nameID: string) => void;
+
+/** What `Field` tells an input about its messages: whether one is an error, and where they are. */
+export interface FieldAriaProps {
+  'aria-invalid'?: boolean | undefined;
+  'aria-describedby'?: string | undefined;
+}

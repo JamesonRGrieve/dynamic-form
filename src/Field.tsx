@@ -6,8 +6,7 @@ import RadioField from './RadioField';
 import SelectField from './SelectField';
 import TextField from './TextField';
 import { Label } from './components/ui/label';
-import { cn } from './lib/utils';
-import type { FieldChangeEvent, FieldChangeHandler } from './types';
+import type { FieldAriaProps, FieldChangeEvent, FieldChangeHandler } from './types';
 
 export type { FieldChangeEvent, FieldChangeHandler } from './types';
 
@@ -35,7 +34,9 @@ export type FieldProps = FieldDefinition & {
   messages?: Message[];
 };
 
-const FieldInput: React.FC<FieldProps> = ({
+const labelIdOf = (nameID: string): string => `${nameID}-label`;
+
+const FieldInput: React.FC<FieldProps & FieldAriaProps> = ({
   nameID,
   label,
   value,
@@ -44,6 +45,8 @@ const FieldInput: React.FC<FieldProps> = ({
   placeholder = '',
   type = 'text',
   items,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedBy,
 }) => {
   const injectedOnChange = (event: FieldChangeEvent): void => {
     onChange?.(event, nameID);
@@ -54,6 +57,8 @@ const FieldInput: React.FC<FieldProps> = ({
     name: nameID,
     onChange: injectedOnChange,
     label,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': ariaDescribedBy,
   };
 
   switch (type) {
@@ -75,7 +80,7 @@ const FieldInput: React.FC<FieldProps> = ({
         />
       );
     case 'radio':
-      return <RadioField {...commonProps} value={value ?? ''} items={items ?? []} />;
+      return <RadioField {...commonProps} aria-labelledby={labelIdOf(nameID)} value={value ?? ''} items={items ?? []} />;
     case 'time':
     case 'date':
     case 'datetime':
@@ -86,16 +91,26 @@ const FieldInput: React.FC<FieldProps> = ({
 };
 
 const Field: React.FC<FieldProps> = ({ nameID, label, description, type = 'text', messages = [], ...rest }) => {
+  const messagesId = `${nameID}-messages`;
   return (
     <div className='w-full my-4'>
       {['checkbox', 'radio'].includes(type) && (
-        <Label id={`${nameID}-label`} htmlFor={nameID}>
+        // A radio group is a div, which a label cannot target; the group names itself from this id.
+        <Label id={labelIdOf(nameID)} htmlFor={type === 'checkbox' ? nameID : undefined}>
           {label}
         </Label>
       )}
       {description !== undefined && description !== '' && <p className='mb-2'>{description}</p>}
-      <FieldInput nameID={nameID} label={label} type={type} {...rest} />
-      <div className={cn('transition-all', messages.length > 0 ? 'block' : 'hidden')}>
+      <FieldInput
+        nameID={nameID}
+        label={label}
+        type={type}
+        {...rest}
+        aria-invalid={messages.some((message) => message.level === 'error')}
+        aria-describedby={messages.length > 0 ? messagesId : undefined}
+      />
+      {/* Always rendered and never display:none, so screen readers announce messages as they appear. */}
+      <div id={messagesId} aria-live='polite'>
         {messages.map((message) => (
           <div
             key={`${message.level}-${message.value}`}

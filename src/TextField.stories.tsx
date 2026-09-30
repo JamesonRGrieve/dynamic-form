@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
+import { expect, userEvent, within } from 'storybook/test';
 import TextField, { type TextFieldProps } from './TextField';
 
 const meta: Meta<typeof TextField> = {
@@ -26,6 +27,12 @@ export const Default: Story = {
       <TextField {...args} id='text-field' name='example' value={value} onChange={(event) => setValue(event.target.value)} />
     );
   },
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByLabelText('Text Field Label');
+    await userEvent.type(input, 'Hello');
+    await expect(input).toHaveValue('Hello');
+    await expect(input).toHaveAccessibleDescription('This is a helper text.');
+  },
 };
 
 export const WithError: Story = {
@@ -42,6 +49,11 @@ export const WithError: Story = {
       />
     );
   },
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByLabelText('With error');
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(input).toHaveAccessibleDescription('This field is required.');
+  },
 };
 
 export const PasswordType: Story = {
@@ -57,5 +69,11 @@ export const PasswordType: Story = {
         onChange={(event) => setValue(event.target.value)}
       />
     );
+  },
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByLabelText('Password');
+    await expect(input).toHaveAttribute('type', 'password');
+    await userEvent.type(input, 'hunter2');
+    await expect(input).toHaveValue('hunter2');
   },
 };

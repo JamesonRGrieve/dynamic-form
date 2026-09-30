@@ -41,6 +41,54 @@ describe('Field', () => {
     expect(screen.getByText('S')).toBeInTheDocument();
   });
 
+  it('marks the input invalid and describes it by its messages when one is an error', () => {
+    render(<Field nameID='m' label='F' messages={[{ level: 'error', value: 'Boom' }]} />);
+    const input = screen.getByLabelText('F');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAccessibleDescription('Boom');
+  });
+
+  it('describes but does not invalidate the input for non-error messages', () => {
+    render(<Field nameID='m' label='F' messages={[{ level: 'info', value: 'Heads up' }]} />);
+    const input = screen.getByLabelText('F');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAccessibleDescription('Heads up');
+  });
+
+  it('keeps a polite live region for messages even while there are none', () => {
+    const { container } = render(<Field nameID='m' label='F' />);
+    expect(container.querySelector('#m-messages')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByLabelText('F')).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('names a radio group by its visible label and passes its messages on', () => {
+    render(
+      <Field
+        nameID='size'
+        label='Size'
+        type='radio'
+        items={[{ value: 'sm', label: 'Small' }]}
+        messages={[{ level: 'error', value: 'Pick one' }]}
+      />,
+    );
+    const group = screen.getByRole('radiogroup', { name: 'Size' });
+    expect(group).toHaveAttribute('aria-invalid', 'true');
+    expect(group).toHaveAccessibleDescription('Pick one');
+  });
+
+  it('marks a select invalid when its message is an error', () => {
+    render(
+      <Field
+        nameID='tz'
+        label='Zone'
+        type='select'
+        items={[{ value: 'UTC', label: 'UTC' }]}
+        messages={[{ level: 'error', value: 'Required' }]}
+      />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Zone' })).toHaveAttribute('aria-invalid', 'true');
+  });
+
   it('renders an explicit label for checkbox type', () => {
     render(<Field nameID='c' label='Agree' type='checkbox' />);
     expect(screen.getAllByText('Agree').length).toBeGreaterThan(0);

@@ -19,6 +19,7 @@ export const StringItems: Story = {
       <RadioField
         id='size'
         name='size'
+        label='Size'
         items={['Sm', 'Md', 'Lg']}
         value={value}
         onChange={(event) => setValue(event.target.value)}
@@ -34,6 +35,7 @@ export const ObjectItems: Story = {
       <RadioField
         id='flavor'
         name='flavor'
+        label='Flavor'
         items={[
           { value: 'chocolate', label: 'Chocolate' },
           { value: 'vanilla', label: 'Vanilla' },
@@ -53,6 +55,7 @@ export const NoSelection: Story = {
       <RadioField
         id='blank'
         name='blank'
+        label='Answer'
         items={['Yes', 'No', 'Maybe']}
         value={value}
         onChange={(event) => setValue(event.target.value)}
@@ -68,6 +71,7 @@ export const ClickSelects: Story = {
       <RadioField
         id='size-int'
         name='size-int'
+        label='Size'
         items={['Sm', 'Md', 'Lg']}
         value={value}
         onChange={(event) => setValue(event.target.value)}
@@ -78,7 +82,6 @@ export const ClickSelects: Story = {
     const canvas = within(canvasElement);
     const mdLabel = canvas.getByText('Md');
     await userEvent.click(mdLabel);
-    const md = canvas.getByDisplayValue('Md') as HTMLInputElement;
-    await expect(md).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: 'Md' })).toBeChecked();
   },
 };

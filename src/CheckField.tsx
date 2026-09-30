@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type React from 'react';
-import type { FieldChangeEvent } from './types';
+import { toHtmlId } from './lib/htmlId';
+import type { FieldAriaProps, FieldChangeEvent } from './types';
 
-type CheckFieldBaseProps = {
+type CheckFieldBaseProps = FieldAriaProps & {
   id: string;
   name: string;
   helperText?: string;
@@ -25,15 +26,26 @@ export type CheckFieldMultiProps = CheckFieldBaseProps & {
 
 export type CheckFieldProps = CheckFieldSingleProps | CheckFieldMultiProps;
 
-function MultiCheckField({ id, name, value, onChange, items }: CheckFieldMultiProps): React.ReactElement {
+function MultiCheckField({
+  id,
+  name,
+  value,
+  onChange,
+  items,
+  label,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedBy,
+}: CheckFieldMultiProps): React.ReactElement {
   const selected: readonly string[] = value;
   return (
-    <div className='space-y-2'>
+    <fieldset aria-label={label} aria-describedby={ariaDescribedBy} className='space-y-2'>
       {items.map((item) => (
         <label key={item} className='flex items-center space-x-2 cursor-pointer'>
+          {/* A group cannot be marked invalid, so each of its boxes is. */}
           <input
             type='checkbox'
-            id={`${id}_${item.replace(/[\W_]+/g, '')}`}
+            id={`${id}-${toHtmlId(item)}`}
+            aria-invalid={ariaInvalid}
             checked={selected.includes(item)}
             onChange={(event) => {
               const next = [...selected];
@@ -57,17 +69,28 @@ function MultiCheckField({ id, name, value, onChange, items }: CheckFieldMultiPr
           <span className='text-gray-700'>{item}</span>
         </label>
       ))}
-    </div>
+    </fieldset>
   );
 }
 
-function SingleCheckField({ id, name, value, onChange, helperText, label }: CheckFieldSingleProps): React.ReactElement {
+function SingleCheckField({
+  id,
+  name,
+  value,
+  onChange,
+  helperText,
+  label,
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedBy,
+}: CheckFieldSingleProps): React.ReactElement {
   return (
     <label className='flex items-center space-x-2 cursor-pointer'>
       <input
         type='checkbox'
         id={id}
         name={name}
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedBy}
         checked={value}
         onChange={onChange}
         className='form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out'

@@ -35,6 +35,37 @@ describe('TextField', () => {
     expect(screen.getByText('Bad')).toBeInTheDocument();
   });
 
+  it('marks the input invalid and describes it by the error', () => {
+    render(<TextField id='x' name='x' label='Name' error='Required' />);
+    const input = screen.getByLabelText('Name');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAccessibleDescription('Required');
+  });
+
+  it('describes a valid input by its helper text', () => {
+    render(<TextField id='x' name='x' label='Name' helperText='Helpful' />);
+    const input = screen.getByLabelText('Name');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAccessibleDescription('Helpful');
+  });
+
+  it('keeps a description passed in alongside its own', () => {
+    render(
+      <>
+        <p id='outer'>From the form.</p>
+        <TextField id='x' name='x' label='Name' error='Required' aria-describedby='outer' />
+      </>,
+    );
+    expect(screen.getByLabelText('Name')).toHaveAccessibleDescription('From the form. Required');
+  });
+
+  it('marks an error flag without text invalid, with no description', () => {
+    render(<TextField id='x' name='x' label='Name' error />);
+    const input = screen.getByLabelText('Name');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).not.toHaveAttribute('aria-describedby');
+  });
+
   it('respects type prop (password)', () => {
     render(<TextField id='x' name='x' label='PW' type='password' />);
     expect(screen.getByLabelText('PW')).toHaveAttribute('type', 'password');

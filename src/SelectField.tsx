@@ -10,11 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from './components/ui/select';
-import type { FieldChangeEvent } from './types';
+import type { FieldAriaProps, FieldChangeEvent } from './types';
 
 export type SelectItemOption = string | { value: string; label?: string };
 
-interface SelectFieldProps {
+interface SelectFieldProps extends FieldAriaProps {
   id: string;
   value: string;
   onChange: (event: FieldChangeEvent) => void;
@@ -35,6 +35,8 @@ export default function SelectField({
   name,
   label,
   placeholder = 'Select an option',
+  'aria-invalid': ariaInvalid,
+  'aria-describedby': ariaDescribedBy,
 }: SelectFieldProps): React.ReactElement {
   const handleValueChange = (selectedValue: string): void => {
     const event: FieldChangeEvent = {
@@ -48,7 +50,7 @@ export default function SelectField({
     <div className='flex flex-col w-full gap-2 mb-4'>
       <Label htmlFor={id}>{label}</Label>
       <Select onValueChange={handleValueChange} value={value}>
-        <SelectTrigger id={id} className='w-full'>
+        <SelectTrigger id={id} aria-invalid={ariaInvalid} aria-describedby={ariaDescribedBy} className='w-full'>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
