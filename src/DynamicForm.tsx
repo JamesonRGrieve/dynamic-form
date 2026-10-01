@@ -1,3 +1,4 @@
+'use client';
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { type ReactElement, type ReactNode, type SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import Field from './Field';
