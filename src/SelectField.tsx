@@ -1,5 +1,6 @@
+'use client';
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type React from 'react';
+import { type ReactElement, useMemo } from 'react';
 import { Label } from './components/ui/label';
 import {
   Select,
@@ -37,7 +38,7 @@ export default function SelectField({
   placeholder = 'Select an option',
   'aria-invalid': ariaInvalid,
   'aria-describedby': ariaDescribedBy,
-}: SelectFieldProps): React.ReactElement {
+}: SelectFieldProps): ReactElement {
   const handleValueChange = (selectedValue: string): void => {
     const event: FieldChangeEvent = {
       target: { value: selectedValue, name },
@@ -46,6 +47,29 @@ export default function SelectField({
     onChange(event);
   };
 
+  // Radix renders a closed Select's content off-screen to read the item labels, so every option
+  // re-renders whenever the field does, and a form re-renders its fields on every keystroke. The
+  // same element is reused while the items and label are unchanged, so React skips the list
+  // (hundreds of options for a timezone picker).
+  const content = useMemo(
+    () => (
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>{label}</SelectLabel>
+          {items.map((item) => {
+            const optionValue = optionValueOf(item);
+            return (
+              <SelectItem key={optionValue} value={optionValue}>
+                {optionLabelOf(item)}
+              </SelectItem>
+            );
+          })}
+        </SelectGroup>
+      </SelectContent>
+    ),
+    [items, label],
+  );
+
   return (
     <div className='flex flex-col w-full gap-2 mb-4'>
       <Label htmlFor={id}>{label}</Label>
@@ -53,19 +77,7 @@ export default function SelectField({
         <SelectTrigger id={id} aria-invalid={ariaInvalid} aria-describedby={ariaDescribedBy} className='w-full'>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>{label}</SelectLabel>
-            {items.map((item) => {
-              const optionValue = optionValueOf(item);
-              return (
-                <SelectItem key={optionValue} value={optionValue}>
-                  {optionLabelOf(item)}
-                </SelectItem>
-              );
-            })}
-          </SelectGroup>
-        </SelectContent>
+        {content}
       </Select>
     </div>
   );

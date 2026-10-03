@@ -39,4 +39,27 @@ describe('SelectField', () => {
     render(<SelectField id='s' name='s' label='Color' items={['Red', 'Green']} value='Red' onChange={() => undefined} />);
     expect(screen.getByLabelText('Color')).toHaveAttribute('role', 'combobox');
   });
+
+  it('does not rebuild its options when re-rendered with the same items', () => {
+    // A form re-renders every field on each keystroke; a long option list (a timezone picker's
+    // hundreds) must not be rebuilt for a change elsewhere in the form.
+    let labelReads = 0;
+    const counted = (value: string): { value: string; label: string } => ({
+      value,
+      get label() {
+        labelReads += 1;
+        return value;
+      },
+    });
+    const items = [counted('Red'), counted('Green')];
+    const view = render(<SelectField id='s' name='s' label='Color' items={items} value='Red' onChange={() => undefined} />);
+    const readsAfterFirstRender = labelReads;
+    expect(readsAfterFirstRender).toBeGreaterThan(0);
+
+    view.rerender(<SelectField id='s' name='s' label='Color' items={items} value='Red' onChange={() => undefined} />);
+    expect(labelReads).toBe(readsAfterFirstRender);
+
+    view.rerender(<SelectField id='s' name='s' label='Color' items={[...items]} value='Red' onChange={() => undefined} />);
+    expect(labelReads).toBeGreaterThan(readsAfterFirstRender);
+  });
 });
