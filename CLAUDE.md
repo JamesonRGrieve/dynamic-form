@@ -6,8 +6,8 @@ Schema-driven dynamic form generation for React. Consumed by `@zephyrex/auth` an
 
 Read **before your first edit**:
 
-- `/home/jameson/Source/ai-prompts/typescript.md`
-- `/home/jameson/Source/ai-prompts/react-next.md`
+- SOP _Stack Standards → TypeScript and JavaScript_
+- SOP _Stack Standards → React and Next.js_
 
 ---
 
