@@ -119,6 +119,16 @@ describe('DynamicForm', () => {
     expect(screen.getByLabelText('Timezone')).toHaveTextContent('Asia/Kolkata');
   });
 
+  it('renders a field with choices as a picker of them, not a text box', () => {
+    const choices = [
+      { value: 'en', label: 'English' },
+      { value: 'fr', label: 'Français' },
+    ];
+    render(<DynamicForm fields={{ language: { type: 'text', value: 'fr', choices } }} onConfirm={() => undefined} />);
+    expect(screen.getByLabelText('Language')).toHaveTextContent('Français');
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
   it('renders an empty field set as just the submit button, and submits nothing', async () => {
     const onConfirm = vi.fn();
     const user = userEvent.setup();

@@ -48,6 +48,8 @@ type DynamicFormFieldSpec = {
   display?: string;
   value?: DynamicFormFieldValueTypes;
   validation?: (value: DynamicFormFieldValueTypes) => boolean;
+  /** A fixed list to choose from: shown as a select instead of a text box. */
+  choices?: readonly { value: string; label: string }[];
 };
 
 export type DynamicFormProps = {
@@ -195,7 +197,7 @@ export default function DynamicForm({
   }
 
   function fieldKind(fieldName: string): 'checkbox' | 'password' | 'select' | 'text' {
-    if (TIMEZONE_FIELDS.includes(fieldName)) {
+    if (TIMEZONE_FIELDS.includes(fieldName) || specs.get(fieldName)?.choices !== undefined) {
       return 'select';
     }
     const t = specs.get(fieldName)?.type;
@@ -226,7 +228,7 @@ export default function DynamicForm({
                 }}
                 messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
                 type={kind}
-                {...(kind === 'select' ? { items: timezones } : {})}
+                {...(kind === 'select' ? { items: [...(specs.get(fieldName)?.choices ?? timezones)] } : {})}
               />
             </div>
           );
