@@ -3,6 +3,7 @@ import type React from 'react';
 import CheckField from './CheckField';
 import PasswordField from './PasswordField';
 import RadioField from './RadioField';
+import SearchableSelectField from './SearchableSelectField';
 import SelectField from './SelectField';
 import TextField from './TextField';
 import { Label } from './components/ui/label';
@@ -21,6 +22,8 @@ export type FieldDefinition = {
   placeholder?: string;
   validate?: (value: string) => boolean;
   type?: 'text' | 'password' | 'select' | 'time' | 'date' | 'datetime' | 'checkbox' | 'radio';
+  /** A select the user filters by typing, for a long list (timezones). */
+  searchable?: boolean;
   items?: {
     value: string;
     label: string;
@@ -44,6 +47,7 @@ const FieldInput: React.FC<FieldProps & FieldAriaProps> = ({
   autoComplete,
   placeholder = '',
   type = 'text',
+  searchable = false,
   items,
   'aria-invalid': ariaInvalid,
   'aria-describedby': ariaDescribedBy,
@@ -67,7 +71,21 @@ const FieldInput: React.FC<FieldProps & FieldAriaProps> = ({
     case 'password':
       return <PasswordField {...commonProps} value={value} autoComplete={autoComplete} />;
     case 'select':
-      return <SelectField {...commonProps} value={value ?? ''} items={items ?? []} />;
+      return searchable ? (
+        <SearchableSelectField
+          {...commonProps}
+          value={value ?? ''}
+          items={items ?? []}
+          {...(placeholder === '' ? {} : { placeholder })}
+        />
+      ) : (
+        <SelectField
+          {...commonProps}
+          value={value ?? ''}
+          items={items ?? []}
+          {...(placeholder === '' ? {} : { placeholder })}
+        />
+      );
     case 'checkbox':
       // A checkbox's DOM value is always "on"; report whether it is ticked instead.
       return (
@@ -93,7 +111,7 @@ const FieldInput: React.FC<FieldProps & FieldAriaProps> = ({
 const Field: React.FC<FieldProps> = ({ nameID, label, description, type = 'text', messages = [], ...rest }) => {
   const messagesId = `${nameID}-messages`;
   return (
-    <div className='w-full my-4'>
+    <div className='w-full'>
       {['checkbox', 'radio'].includes(type) && (
         // A radio group is a div, which a label cannot target; the group names itself from this id.
         <Label id={labelIdOf(nameID)} htmlFor={type === 'checkbox' ? nameID : undefined}>

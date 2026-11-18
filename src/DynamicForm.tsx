@@ -50,6 +50,10 @@ type DynamicFormFieldSpec = {
   validation?: (value: DynamicFormFieldValueTypes) => boolean;
   /** A fixed list to choose from: shown as a select instead of a text box. */
   choices?: readonly { value: string; label: string }[];
+  /** What an empty select or text box says (a select otherwise says "Select an option"). */
+  placeholder?: string;
+  /** A select the user filters by typing; for long lists such as timezones. */
+  searchable?: boolean;
 };
 
 export type DynamicFormProps = {
@@ -192,6 +196,10 @@ export default function DynamicForm({
     log(['Setting initial dynamic form state', next], { client: 2 });
   }, [buildInitialState]);
 
+  function placeholderOf(fieldName: string): string | undefined {
+    return specs.get(fieldName)?.placeholder;
+  }
+
   function fieldDisplay(fieldName: string): string {
     return specs.get(fieldName)?.display ?? toTitleCase(fieldName);
   }
@@ -229,6 +237,8 @@ export default function DynamicForm({
                 messages={fieldObject.error !== '' ? [{ level: 'error', value: fieldObject.error }] : []}
                 type={kind}
                 {...(kind === 'select' ? { items: [...(specs.get(fieldName)?.choices ?? timezones)] } : {})}
+                {...(placeholderOf(fieldName) === undefined ? {} : { placeholder: placeholderOf(fieldName) ?? '' })}
+                {...(kind === 'select' && specs.get(fieldName)?.searchable === true ? { searchable: true } : {})}
               />
             </div>
           );
@@ -249,7 +259,7 @@ export default function DynamicForm({
             }
             return (
               <div className='col-span-2' key={fieldName}>
-                <div className='w-full my-4'>
+                <div className='w-full'>
                   <TextField
                     onChange={() => undefined}
                     id={toHtmlId(fieldName)}
