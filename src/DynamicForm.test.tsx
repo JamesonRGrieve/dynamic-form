@@ -187,6 +187,18 @@ describe('DynamicForm', () => {
     expect(screen.getByText('Nombre attendu.')).toBeInTheDocument();
   });
 
+  it('stacks its fields one to a row on a phone and two to a row from 640px', () => {
+    const view = render(
+      <DynamicForm
+        fields={{ first: { type: 'text', value: '' }, second: { type: 'text', value: '' } }}
+        onConfirm={vi.fn()}
+      />,
+    );
+    for (const input of view.getAllByRole('textbox')) {
+      expect(input.closest('.col-span-4')).toHaveClass('sm:col-span-2');
+    }
+  });
+
   it('groups editable and read-only fields under their legends', () => {
     render(
       <DynamicForm

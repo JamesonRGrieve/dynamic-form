@@ -78,6 +78,8 @@ type FieldEntry = { value: DynamicFormFieldValueTypes; error: string };
 type EditedState = { [key: string]: FieldEntry };
 
 const EMPTY_ENTRY: FieldEntry = { value: '', error: '' };
+/** A field's share of the form's four columns: the whole width on a phone, half from 640px up. */
+const FIELD_SPAN = 'col-span-4 sm:col-span-2';
 
 function getEntry(state: EditedState, key: string): FieldEntry {
   return state[key] ?? EMPTY_ENTRY;
@@ -226,7 +228,7 @@ export default function DynamicForm({
         {Object.entries(editedState).map(([fieldName, fieldObject]) => {
           const kind = fieldKind(fieldName);
           return (
-            <div key={fieldName} className='col-span-2'>
+            <div key={fieldName} className={FIELD_SPAN}>
               <Field
                 nameID={toHtmlId(fieldName)}
                 label={fieldDisplay(fieldName)}
@@ -243,7 +245,7 @@ export default function DynamicForm({
             </div>
           );
         })}
-        <Button className='col-span-2' onClick={handleSubmit} disabled={submitting}>
+        <Button className={FIELD_SPAN} onClick={handleSubmit} disabled={submitting}>
           {submitButtonText}
         </Button>
       </fieldset>
@@ -258,7 +260,7 @@ export default function DynamicForm({
               return null;
             }
             return (
-              <div className='col-span-2' key={fieldName}>
+              <div className={FIELD_SPAN} key={fieldName}>
                 <div className='w-full'>
                   <TextField
                     onChange={() => undefined}
