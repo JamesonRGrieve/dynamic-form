@@ -66,6 +66,8 @@ describe('DynamicForm', () => {
       <DynamicForm fields={{ a: { type: 'text', value: 'x' } }} submitButtonText='Persist' onConfirm={() => undefined} />,
     );
     expect(screen.getByRole('button', { name: 'Persist' })).toBeInTheDocument();
+    // Sized to its words at the start of its row, not stretched like a field.
+    expect(screen.getByRole('button', { name: 'Persist' })).toHaveClass('justify-self-start');
   });
 
   it('invokes onConfirm with the field values on submit', async () => {

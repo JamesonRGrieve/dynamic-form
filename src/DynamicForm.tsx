@@ -245,7 +245,8 @@ export default function DynamicForm({
             </div>
           );
         })}
-        <Button className={FIELD_SPAN} onClick={handleSubmit} disabled={submitting}>
+        {/* Sized to its words at the start of its row, like a form's other actions, not stretched like a field. */}
+        <Button className={`${FIELD_SPAN} justify-self-start`} onClick={handleSubmit} disabled={submitting}>
           {submitButtonText}
         </Button>
       </fieldset>
