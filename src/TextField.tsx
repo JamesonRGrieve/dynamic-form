@@ -49,10 +49,10 @@ function TextField({
         {...{ id, value, onChange, name, autoComplete, placeholder, type, ref }}
         aria-invalid={ariaInvalid ?? hasError}
         aria-describedby={describedBy(ariaDescribedBy, message === undefined ? undefined : messageId)}
-        className={`border ${hasError ? 'border-red-500' : 'border-gray-300'} ${className ?? ''}`}
+        className={`${hasError ? 'border-destructive' : ''} ${className ?? ''}`.trim()}
       />
       {message !== undefined && (
-        <p id={messageId} className={`text-sm ${errorText === undefined ? 'text-gray-500' : 'text-red-500'}`}>
+        <p id={messageId} className={`text-sm ${errorText === undefined ? 'text-muted-foreground' : 'text-destructive'}`}>
           {message}
         </p>
       )}

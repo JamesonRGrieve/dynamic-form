@@ -24,6 +24,20 @@ describe('TextField', () => {
     expect(screen.getByText('Required')).toBeInTheDocument();
   });
 
+  it('takes its border from the theme like every other field, and the destructive token for an error', () => {
+    render(
+      <>
+        <TextField id='a' name='a' label='Fine' />
+        <TextField id='b' name='b' label='Wrong' error='Required' />
+      </>,
+    );
+    // A hard-coded grey border stood out beside the selects' themed one (border-input).
+    expect(screen.getByLabelText('Fine')).toHaveClass('border-input');
+    expect(screen.getByLabelText('Fine').className).not.toMatch(/gray|red-/);
+    expect(screen.getByLabelText('Wrong')).toHaveClass('border-destructive');
+    expect(screen.getByText('Required')).toHaveClass('text-destructive');
+  });
+
   it('renders helperText when there is no error', () => {
     render(<TextField id='x' name='x' label='Name' helperText='Helpful' />);
     expect(screen.getByText('Helpful')).toBeInTheDocument();
